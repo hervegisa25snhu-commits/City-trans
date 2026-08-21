@@ -1,0 +1,6 @@
+{
+  "name": "Kigali Real-Time Bus Tracker",
+  "description": "Real-time GPS bus tracking, interactive map, ETA countdowns, live vehicle telemetry, route planner, and AI transit assistant for Kigali public transportation.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
