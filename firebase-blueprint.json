@@ -1,0 +1,62 @@
+{
+  "schema": {
+    "users": {
+      "description": "User profiles and preferences",
+      "fields": {
+        "email": "string",
+        "displayName": "string",
+        "photoURL": "string",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "rules": {
+        "read": "Allow users to read their own profile",
+        "write": "Allow users to update their own profile"
+      }
+    },
+    "userCards": {
+      "description": "Tap and Go transit smart cards saved by passengers",
+      "fields": {
+        "userId": "string",
+        "cardNumber": "string",
+        "cardHolder": "string",
+        "balanceRwf": "number",
+        "cardType": "string",
+        "updatedAt": "timestamp"
+      },
+      "rules": {
+        "read": "Allow users to read their own transit cards",
+        "write": "Allow users to manage their own transit cards"
+      }
+    },
+    "favorites": {
+      "description": "Saved favorite transit routes and bus stops for rapid tracking",
+      "fields": {
+        "userId": "string",
+        "type": "string",
+        "targetId": "string",
+        "targetName": "string",
+        "createdAt": "timestamp"
+      },
+      "rules": {
+        "read": "Allow users to read their own saved favorites",
+        "write": "Allow users to create and delete their own favorites"
+      }
+    },
+    "chatHistory": {
+      "description": "Saved multi-turn conversations with AI Transit Assistant",
+      "fields": {
+        "userId": "string",
+        "role": "string",
+        "text": "string",
+        "modelUsed": "string",
+        "groundingType": "string",
+        "createdAt": "timestamp"
+      },
+      "rules": {
+        "read": "Allow users to read their own chat history",
+        "write": "Allow users to write their own chat history"
+      }
+    }
+  }
+}

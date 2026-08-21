@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useMap } from '@vis.gl/react-google-maps';
+import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 
 interface GoogleMapsTrafficLayerProps {
   enabled?: boolean;
@@ -7,12 +7,13 @@ interface GoogleMapsTrafficLayerProps {
 
 export default function GoogleMapsTrafficLayer({ enabled = true }: GoogleMapsTrafficLayerProps) {
   const map = useMap();
+  const mapsLib = useMapsLibrary('maps');
   const trafficLayerRef = useRef<google.maps.TrafficLayer | null>(null);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !mapsLib) return;
 
-    const trafficLayer = new google.maps.TrafficLayer();
+    const trafficLayer = new mapsLib.TrafficLayer();
     trafficLayerRef.current = trafficLayer;
 
     if (enabled) {
@@ -25,7 +26,7 @@ export default function GoogleMapsTrafficLayer({ enabled = true }: GoogleMapsTra
       trafficLayer.setMap(null);
       trafficLayerRef.current = null;
     };
-  }, [map, enabled]);
+  }, [map, mapsLib, enabled]);
 
   return null;
 }

@@ -19,6 +19,9 @@ import {
   CheckCircle,
   CircleDot,
   Radio,
+  Zap,
+  Leaf,
+  BatteryCharging,
 } from 'lucide-react';
 
 interface BusDetailModalProps {
@@ -61,14 +64,20 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
         {/* Header Banner */}
         <div
           className="p-5 text-white flex items-start justify-between relative overflow-hidden"
-          style={{ backgroundColor: route?.color || '#2563eb' }}
+          style={{ backgroundColor: bus.isElectric ? '#059669' : route?.color || '#2563eb' }}
         >
           <div className="relative z-10 space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur text-xs font-mono font-bold tracking-wider uppercase">
                 Line {route?.code || '101'}
               </span>
-              <span className="text-xs font-medium text-white/80">{bus.operator}</span>
+              <span className="text-xs font-semibold text-white/90">{bus.operator}</span>
+              {bus.isElectric && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold flex items-center gap-1">
+                  <Zap className="w-3 h-3 fill-current" />
+                  100% ELECTRIC
+                </span>
+              )}
             </div>
             <h2 className="text-xl font-black tracking-tight font-mono">{bus.plateNumber}</h2>
             <p className="text-xs text-white/90 font-medium truncate max-w-xs">{route?.name}</p>
@@ -129,6 +138,28 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
             </div>
           </div>
 
+          {/* Electric Vehicle Stats Banner */}
+          {bus.isElectric && (
+            <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <BatteryCharging className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-white">Battery State of Charge</p>
+                  <p className="text-[11px] text-emerald-300">Clean Electric Propulsion</p>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <p className="text-base font-extrabold text-emerald-400 font-mono">
+                  {bus.batterySocPercent ?? 88}%
+                </p>
+                <p className="text-[10px] text-slate-400">CO₂ Saved: +{bus.co2SavedKg ?? 150}kg</p>
+              </div>
+            </div>
+          )}
+
           {/* Passenger Capacity & Load Meter */}
           <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2.5">
             <div className="flex items-center justify-between text-xs">
@@ -155,7 +186,7 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
               />
             </div>
             <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-              <span>{bus.passengerCount} seated & standing</span>
+              <span>{bus.passengerCount} seated &amp; standing</span>
               <span>Capacity: {bus.capacity}</span>
             </div>
           </div>
@@ -163,7 +194,7 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
           {/* Driver & Vehicle Metadata */}
           <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
             <div className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-              Driver & Fleet Telemetry
+              Driver &amp; Fleet Telemetry
             </div>
 
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
@@ -184,10 +215,10 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
 
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
               <span className="text-slate-400 flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5 text-emerald-400" /> Tap&Go Validator
+                <CreditCard className="w-3.5 h-3.5 text-emerald-400" /> Tap&amp;Go Validator
               </span>
               <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5" /> Online & Active
+                <CheckCircle className="w-3.5 h-3.5" /> Online &amp; Active
               </span>
             </div>
 
@@ -246,7 +277,7 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
           {route && (
             <div className="space-y-2">
               <div className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-                Route Stops & Sequence
+                Route Stops &amp; Sequence
               </div>
               <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 max-h-44 overflow-y-auto space-y-3">
                 {route.stopIds.map((stopId, idx) => {
@@ -259,7 +290,7 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
                         <div
                           className={`w-3 h-3 rounded-full border-2 ${
                             isCurrentTarget
-                              ? 'bg-amber-400 border-white ring-4 ring-amber-400/20 animate-pulse'
+                              ? 'bg-amber-400 border-white ring-4 ring-amber-400/30 animate-pulse'
                               : 'bg-slate-700 border-slate-500'
                           }`}
                         />
@@ -267,17 +298,23 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
                           <div className="w-0.5 h-6 bg-slate-800 my-0.5" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div
-                          className={`font-semibold ${
-                            isCurrentTarget ? 'text-amber-300' : 'text-slate-300'
-                          }`}
-                        >
-                          {stopObj?.name || stopId}
+
+                      <div className="flex-1 -mt-0.5">
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`font-medium ${
+                              isCurrentTarget ? 'text-amber-300 font-bold' : 'text-slate-300'
+                            }`}
+                          >
+                            {stopObj?.name || stopId}
+                          </span>
+                          {isCurrentTarget && (
+                            <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/40 font-mono">
+                              Next Stop
+                            </span>
+                          )}
                         </div>
-                        <div className="text-[10px] text-slate-500">
-                          {stopObj?.zone} {isCurrentTarget && '• Approaching Next'}
-                        </div>
+                        <span className="text-[10px] text-slate-500">Zone: {stopObj?.zone}</span>
                       </div>
                     </div>
                   );
@@ -285,32 +322,21 @@ export default function BusDetailModal({ bus, onClose }: BusDetailModalProps) {
               </div>
             </div>
           )}
-        </div>
 
-        {/* Footer Action: Proximity Reminder */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
-            Fare: <strong className="text-slate-200 font-mono">{route?.standardFareRwf || 300} RWF</strong> (Tap&Go)
+          {/* Proximity Alarm Button */}
+          <div className="pt-2">
+            <button
+              onClick={toggleAlarm}
+              className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition ${
+                alarmActive
+                  ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-lg shadow-amber-500/20'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+              }`}
+            >
+              {alarmActive ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+              <span>{alarmActive ? 'Arrival Alarm Active (Tap to Disable)' : 'Set Proximity Arrival Alert'}</span>
+            </button>
           </div>
-
-          <button
-            onClick={toggleAlarm}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition active:scale-95 shadow-lg ${
-              alarmActive
-                ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400/40'
-                : 'bg-blue-600 hover:bg-blue-500 text-white'
-            }`}
-          >
-            {alarmActive ? (
-              <>
-                <BellRing className="w-4 h-4" /> Proximity Alarm Active
-              </>
-            ) : (
-              <>
-                <Bell className="w-4 h-4" /> Set Arrival Alert
-              </>
-            )}
-          </button>
         </div>
       </div>
     </div>

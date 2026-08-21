@@ -1,16 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
-import { BusTelemetry, BusStop, TransitRoute } from '../types';
-import { KIGALI_BUS_STOPS, KIGALI_ROUTES } from '../data/kigaliTransitData';
-import { MapPin, Navigation, Layers, Compass, Eye, Volume2, ShieldCheck, Bus as BusIcon, Radio } from 'lucide-react';
+import { BusTelemetry, BusStop, TransitRoute, TransitChokePoint, DedicatedBusCorridor } from '../types';
+import { KIGALI_BUS_STOPS, KIGALI_ROUTES, KIGALI_CHOKE_POINTS, KIGALI_DEDICATED_BUS_LANES } from '../data/kigaliTransitData';
+import {
+  MapPin,
+  Navigation,
+  Layers,
+  Compass,
+  Eye,
+  Volume2,
+  ShieldCheck,
+  Bus as BusIcon,
+  Radio,
+  AlertTriangle,
+  Zap,
+  Leaf,
+  Route as RouteIcon,
+} from 'lucide-react';
 
 interface InteractiveMapProps {
   buses: BusTelemetry[];
   selectedBus: BusTelemetry | null;
   selectedStop: BusStop | null;
+  selectedChokePoint?: TransitChokePoint | null;
   activeRouteId: string | null;
   onSelectBus: (bus: BusTelemetry | null) => void;
   onSelectStop: (stop: BusStop | null) => void;
+  onSelectChokePoint?: (chokePoint: TransitChokePoint | null) => void;
   userLocation: { lat: number; lng: number } | null;
   onLocateUser: () => void;
 }
@@ -40,9 +56,11 @@ export default function InteractiveMap({
   buses,
   selectedBus,
   selectedStop,
+  selectedChokePoint,
   activeRouteId,
   onSelectBus,
   onSelectStop,
+  onSelectChokePoint,
   userLocation,
   onLocateUser,
 }: InteractiveMapProps) {
@@ -51,12 +69,16 @@ export default function InteractiveMap({
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const busMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const stopMarkersRef = useRef<Map<string, L.Marker>>(new Map());
+  const chokeMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const polylinesRef = useRef<Map<string, L.Polyline>>(new Map());
+  const corridorPolylinesRef = useRef<Map<string, L.Polyline>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
 
   const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
-  const [showTrafficLayer, setShowTrafficLayer] = useState(true);
   const [showStops, setShowStops] = useState(true);
+  const [showChokePoints, setShowChokePoints] = useState(true);
+  const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
+  const [showRouteLines, setShowRouteLines] = useState(false);
 
   // Initialize Map
   useEffect(() => {
@@ -80,8 +102,10 @@ export default function InteractiveMap({
     // Add scale control
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
 
-    // Initial render of route polylines
-    renderRoutes(map, activeRouteId);
+    // Initial render of corridors, routes, choke points, stops
+    renderDedicatedCorridors(map, false);
+    renderRoutes(map, activeRouteId, false);
+    renderChokePoints(map);
     renderStops(map);
 
     return () => {
@@ -103,21 +127,71 @@ export default function InteractiveMap({
     tileLayerRef.current = tile;
   }, [mapStyle]);
 
-  // Update Route Polylines when activeRouteId changes
+  // Update Dedicated Bus Lanes
   useEffect(() => {
     if (!mapRef.current) return;
-    renderRoutes(mapRef.current, activeRouteId);
-  }, [activeRouteId]);
+    renderDedicatedCorridors(mapRef.current, showDedicatedLanes);
+  }, [showDedicatedLanes]);
 
-  function renderRoutes(map: L.Map, highlightedRouteId: string | null) {
-    // Clear previous polylines
+  // Update Route Polylines and zoom when activeRouteId or showRouteLines changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    renderRoutes(mapRef.current, activeRouteId, showRouteLines);
+    if (activeRouteId) {
+      const route = KIGALI_ROUTES.find((r) => r.id === activeRouteId);
+      if (route && route.waypoints.length > 0) {
+        const bounds = L.latLngBounds(route.waypoints as [number, number][]);
+        mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+      }
+    }
+  }, [activeRouteId, showRouteLines]);
+
+  function renderDedicatedCorridors(map: L.Map, enabled: boolean) {
+    corridorPolylinesRef.current.forEach((pl) => map.removeLayer(pl));
+    corridorPolylinesRef.current.clear();
+
+    if (!enabled) return;
+
+    KIGALI_DEDICATED_BUS_LANES.forEach((lane) => {
+      const polyline = L.polyline(lane.waypoints, {
+        color: lane.color,
+        weight: 6,
+        opacity: 0.85,
+        lineCap: 'round',
+        lineJoin: 'round',
+        dashArray: '8, 8',
+      }).addTo(map);
+
+      polyline.bindPopup(`
+        <div style="font-family: sans-serif; padding: 4px; max-width: 220px;">
+          <h4 style="font-weight: bold; margin: 0 0 4px 0; color: #0f766e; font-size: 13px;">${lane.name}</h4>
+          <p style="font-size: 11px; margin: 0 0 4px 0; color: #475569;">${lane.kinyarwandaName}</p>
+          <div style="font-size: 11px; background: #f0fdf4; padding: 4px; border-radius: 4px; color: #166534; font-weight: bold; margin-bottom: 4px;">
+            Peak: ${lane.peakHours}
+          </div>
+          <p style="font-size: 11px; color: #334155; margin: 0;">${lane.description}</p>
+        </div>
+      `);
+
+      corridorPolylinesRef.current.set(lane.id, polyline);
+    });
+  }
+
+  function renderRoutes(map: L.Map, highlightedRouteId: string | null, forceShowAll: boolean) {
     polylinesRef.current.forEach((pl) => map.removeLayer(pl));
     polylinesRef.current.clear();
 
-    KIGALI_ROUTES.forEach((route) => {
-      const isHighlighted = !highlightedRouteId || highlightedRouteId === route.id;
-      const opacity = isHighlighted ? (highlightedRouteId ? 0.95 : 0.6) : 0.15;
-      const weight = isHighlighted ? (highlightedRouteId ? 6 : 4) : 2;
+    // If no route is selected and forceShowAll is false, do not draw any lines
+    const routesToRender = highlightedRouteId
+      ? KIGALI_ROUTES.filter((r) => r.id === highlightedRouteId)
+      : forceShowAll
+      ? KIGALI_ROUTES
+      : [];
+
+    routesToRender.forEach((route) => {
+      const isSelected = highlightedRouteId === route.id;
+      const opacity = isSelected ? 0.95 : 0.7;
+      const weight = isSelected ? 6 : 4;
 
       const polyline = L.polyline(route.waypoints, {
         color: route.color,
@@ -125,11 +199,9 @@ export default function InteractiveMap({
         opacity,
         lineCap: 'round',
         lineJoin: 'round',
-        dashArray: !isHighlighted ? '4, 8' : undefined,
       }).addTo(map);
 
       polyline.on('click', () => {
-        // Find first bus on this route and select it
         const firstBus = buses.find((b) => b.routeId === route.id);
         if (firstBus) onSelectBus(firstBus);
       });
@@ -138,36 +210,92 @@ export default function InteractiveMap({
     });
   }
 
+  function renderChokePoints(map: L.Map) {
+    chokeMarkersRef.current.forEach((m) => map.removeLayer(m));
+    chokeMarkersRef.current.clear();
+
+    KIGALI_CHOKE_POINTS.forEach((cp) => {
+      const isCritical = cp.severity === 'critical';
+      const isHigh = cp.severity === 'high';
+      const colorBg = isCritical ? '#e11d48' : isHigh ? '#d97706' : '#2563eb';
+
+      const customIcon = L.divIcon({
+        className: 'custom-choke-icon',
+        html: `
+          <div class="group relative flex items-center justify-center cursor-pointer">
+            <div class="absolute -inset-2 rounded-full animate-ping opacity-40" style="background-color: ${colorBg};"></div>
+            <div class="relative flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-[10px] font-bold shadow-lg border-2 border-white" style="background-color: ${colorBg};">
+              <span>⚠️</span>
+              <span>+${cp.avgDelayMinutes}m</span>
+            </div>
+          </div>
+        `,
+        iconSize: [60, 24],
+        iconAnchor: [30, 12],
+      });
+
+      const marker = L.marker([cp.lat, cp.lng], { icon: customIcon }).addTo(map);
+
+      marker.bindPopup(`
+        <div style="font-family: sans-serif; padding: 4px; max-width: 250px;">
+          <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+            <strong style="color: ${colorBg}; font-size: 13px;">${cp.name}</strong>
+          </div>
+          <p style="font-size: 11px; color: #059669; font-weight: bold; margin: 0 0 6px 0;">${cp.kinyarwandaName}</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; margin-bottom: 6px; font-size: 11px;">
+            <div>Speed: <strong>${cp.currentSpeedKmh} km/h</strong></div>
+            <div>Delay: <strong style="color: #e11d48;">+${cp.avgDelayMinutes} min</strong></div>
+          </div>
+          <p style="font-size: 11px; margin: 0 0 4px 0; color: #334155;"><strong>Cause:</strong> ${cp.cause}</p>
+          <p style="font-size: 11px; margin: 0; color: #0f766e;"><strong>EcoFleet:</strong> ${cp.ecofleetBypassRecommendation}</p>
+        </div>
+      `);
+
+      marker.on('click', () => {
+        if (onSelectChokePoint) onSelectChokePoint(cp);
+      });
+
+      chokeMarkersRef.current.set(cp.id, marker);
+    });
+  }
+
   function renderStops(map: L.Map) {
     stopMarkersRef.current.forEach((m) => map.removeLayer(m));
     stopMarkersRef.current.clear();
 
     KIGALI_BUS_STOPS.forEach((stop) => {
-      const isMajorTerminal =
-        stop.id === 'stop_downtown' ||
-        stop.id === 'stop_nyabugogo' ||
-        stop.id === 'stop_kimironko' ||
-        stop.id === 'stop_remera_giporoso';
+      const isBusPark = stop.isBusPark;
+      const gareLabel = stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name;
 
       const customIcon = L.divIcon({
         className: 'custom-stop-icon',
-        html: `
+        html: isBusPark
+          ? `
           <div class="group relative flex items-center justify-center cursor-pointer">
-            <div class="absolute -inset-1 rounded-full ${
-              isMajorTerminal ? 'bg-amber-400/40 animate-ping' : 'bg-slate-400/20'
-            }"></div>
-            <div class="relative w-5 h-5 rounded-full ${
-              isMajorTerminal ? 'bg-amber-500 border-2 border-white' : 'bg-slate-800 border border-slate-300'
-            } flex items-center justify-center text-[10px] text-white shadow-md transition-transform transform group-hover:scale-125">
-              <span class="font-bold">${isMajorTerminal ? '★' : '•'}</span>
+            <div class="absolute -inset-1 rounded-2xl ${stop.isEvChargingHub ? 'bg-emerald-500/40 animate-pulse' : 'bg-amber-400/30'}"></div>
+            <div class="relative px-2 py-0.5 rounded-xl shadow-lg border flex items-center gap-1 transition-transform transform group-hover:scale-110 ${
+              stop.isEvChargingHub
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-400'
+                : 'bg-slate-900 text-amber-400 border-amber-500'
+            }">
+              <span class="text-[10px]">🏛️</span>
+              <span class="text-[10px] font-mono font-bold whitespace-nowrap">${gareLabel}</span>
+              ${stop.isEvChargingHub ? '<span class="text-[10px] text-emerald-300">⚡</span>' : ''}
             </div>
-            <div class="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/90 backdrop-blur text-white text-[11px] font-semibold px-2 py-0.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 border border-slate-700">
+          </div>
+        `
+          : `
+          <div class="group relative flex items-center justify-center cursor-pointer">
+            <div class="w-3 h-3 rounded-full ${
+              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-slate-700 border border-slate-300'
+            } shadow-sm group-hover:scale-125 transition"></div>
+            <div class="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 border border-slate-700">
               ${stop.name}
             </div>
           </div>
         `,
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
+        iconSize: isBusPark ? [110, 24] : [14, 14],
+        iconAnchor: isBusPark ? [55, 12] : [7, 7],
       });
 
       const marker = L.marker([stop.lat, stop.lng], { icon: customIcon }).addTo(map);
@@ -176,11 +304,27 @@ export default function InteractiveMap({
         map.flyTo([stop.lat, stop.lng], 15, { duration: 0.8 });
       });
 
+      // Bind detailed popup
+      marker.bindPopup(`
+        <div class="p-1 text-slate-900 max-w-xs font-sans">
+          <div class="flex items-center justify-between border-b pb-1 mb-1">
+            <strong class="text-xs ${isBusPark ? 'text-amber-800' : 'text-slate-800'}">${stop.name}</strong>
+            ${isBusPark ? '<span class="bg-amber-100 text-amber-800 text-[9px] px-1 py-0.2 rounded font-bold">GARE</span>' : ''}
+          </div>
+          <p class="text-[11px] text-emerald-800 font-mono font-semibold">${stop.kinyarwandaName || ''}</p>
+          <p class="text-[11px] text-slate-600"><strong>Zone:</strong> ${stop.zone}</p>
+          ${isBusPark && stop.bayCapacity ? `<p class="text-[11px] text-slate-700"><strong>Capacity:</strong> ${stop.bayCapacity} bus bays</p>` : ''}
+          ${stop.popularLandmark ? `<p class="text-[11px] text-slate-600"><strong>Landmark:</strong> ${stop.popularLandmark}</p>` : ''}
+          ${stop.connectingLines?.length ? `<p class="text-[11px] text-blue-700"><strong>Lines:</strong> ${stop.connectingLines.map((c: string) => `Line ${c}`).join(', ')}</p>` : ''}
+          ${stop.isEvChargingHub ? '<div class="mt-1 p-1 bg-emerald-50 text-emerald-800 text-[10px] rounded font-bold">⚡ EcoFleet EV Supercharging Hub</div>' : ''}
+        </div>
+      `);
+
       stopMarkersRef.current.set(stop.id, marker);
     });
   }
 
-  // Toggle Stops visibility
+  // Toggle Visibility for layers
   useEffect(() => {
     if (!mapRef.current) return;
     stopMarkersRef.current.forEach((marker) => {
@@ -192,6 +336,28 @@ export default function InteractiveMap({
     });
   }, [showStops]);
 
+  useEffect(() => {
+    if (!mapRef.current) return;
+    chokeMarkersRef.current.forEach((marker) => {
+      if (showChokePoints) {
+        if (!mapRef.current?.hasLayer(marker)) mapRef.current?.addLayer(marker);
+      } else {
+        if (mapRef.current?.hasLayer(marker)) mapRef.current?.removeLayer(marker);
+      }
+    });
+  }, [showChokePoints]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    corridorPolylinesRef.current.forEach((pl) => {
+      if (showDedicatedLanes) {
+        if (!mapRef.current?.hasLayer(pl)) mapRef.current?.addLayer(pl);
+      } else {
+        if (mapRef.current?.hasLayer(pl)) mapRef.current?.removeLayer(pl);
+      }
+    });
+  }, [showDedicatedLanes]);
+
   // Update Live Buses Markers on Map
   useEffect(() => {
     if (!mapRef.current) return;
@@ -201,42 +367,33 @@ export default function InteractiveMap({
       const route = KIGALI_ROUTES.find((r) => r.id === bus.routeId);
       const isSelected = selectedBus?.id === bus.id;
       const operatorColor =
-        bus.operator === 'KBS' ? '#2563eb' : bus.operator === 'Royal Express' ? '#dc2626' : '#059669';
-
-      const occupancyBadge =
-        bus.occupancy === 'low'
-          ? 'bg-emerald-500 text-white'
-          : bus.occupancy === 'medium'
-          ? 'bg-amber-500 text-white'
-          : bus.occupancy === 'high'
-          ? 'bg-orange-500 text-white'
-          : 'bg-rose-600 text-white';
+        bus.operator === 'EcoFleet' || bus.isElectric
+          ? '#10b981'
+          : bus.operator === 'KBS'
+          ? '#2563eb'
+          : bus.operator === 'Royal Express'
+          ? '#dc2626'
+          : '#059669';
 
       const iconHtml = `
         <div class="relative cursor-pointer transition-all duration-300 transform ${
           isSelected ? 'scale-125 z-40' : 'hover:scale-110 z-20'
         }">
-          <!-- Direction Cone / Pulse -->
           <div class="absolute -inset-2 rounded-full opacity-30 animate-pulse" style="background-color: ${operatorColor}"></div>
           
-          <!-- Bus Pill Marker -->
           <div class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white font-bold text-xs shadow-xl border-2 ${
             isSelected ? 'border-amber-300 ring-4 ring-amber-400/30' : 'border-white'
           }" style="background-color: ${operatorColor}">
-            <!-- Bus Heading Arrow Icon -->
             <div style="transform: rotate(${bus.headingDeg}deg); transition: transform 0.5s ease-out;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L4 20L12 16L20 20L12 2Z"/>
               </svg>
             </div>
             
-            <span class="tracking-tight font-mono text-[11px]">${route?.code || 'BUS'}</span>
-            
-            <!-- Speed Tag -->
+            <span class="tracking-tight font-mono text-[11px]">${bus.isElectric ? '⚡' : ''}${route?.code || 'BUS'}</span>
             <span class="text-[9px] font-medium bg-black/30 px-1 py-0.2 rounded">${bus.speedKmh}k</span>
           </div>
 
-          <!-- Operator & Plate Tag on Hover / Selected -->
           <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 ${
             isSelected ? 'opacity-100' : 'opacity-0'
           } bg-slate-900 text-slate-100 text-[10px] font-mono px-1.5 py-0.5 rounded shadow whitespace-nowrap pointer-events-none border border-slate-700">
@@ -258,15 +415,12 @@ export default function InteractiveMap({
         marker.setIcon(busIcon);
       } else {
         const marker = L.marker([bus.currentLat, bus.currentLng], { icon: busIcon }).addTo(map);
-        marker.on('click', () => {
-          onSelectBus(bus);
-          map.flyTo([bus.currentLat, bus.currentLng], 15, { duration: 0.7 });
-        });
+        marker.on('click', () => onSelectBus(bus));
         busMarkersRef.current.set(bus.id, marker);
       }
     });
 
-    // Cleanup markers of buses that no longer exist
+    // Remove obsolete markers
     const currentBusIds = new Set(buses.map((b) => b.id));
     busMarkersRef.current.forEach((marker, id) => {
       if (!currentBusIds.has(id)) {
@@ -276,15 +430,25 @@ export default function InteractiveMap({
     });
   }, [buses, selectedBus]);
 
-  // Handle Selected Bus Pan
+  // Center on selected bus
   useEffect(() => {
     if (!mapRef.current || !selectedBus) return;
-    mapRef.current.flyTo([selectedBus.currentLat, selectedBus.currentLng], 15, {
-      duration: 0.6,
-    });
+    mapRef.current.flyTo([selectedBus.currentLat, selectedBus.currentLng], 15, { duration: 0.6 });
   }, [selectedBus?.id]);
 
-  // Update User Location Marker
+  // Center on selected stop
+  useEffect(() => {
+    if (!mapRef.current || !selectedStop) return;
+    mapRef.current.flyTo([selectedStop.lat, selectedStop.lng], 15, { duration: 0.6 });
+  }, [selectedStop?.id]);
+
+  // Center on selected choke point
+  useEffect(() => {
+    if (!mapRef.current || !selectedChokePoint) return;
+    mapRef.current.flyTo([selectedChokePoint.lat, selectedChokePoint.lng], 15, { duration: 0.6 });
+  }, [selectedChokePoint?.id]);
+
+  // User location marker
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
@@ -298,8 +462,8 @@ export default function InteractiveMap({
             <div class="relative w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-lg"></div>
           </div>
         `,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
       });
 
       if (userMarkerRef.current) {
@@ -307,135 +471,135 @@ export default function InteractiveMap({
       } else {
         userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map);
       }
-      map.flyTo([userLocation.lat, userLocation.lng], 14, { duration: 0.9 });
     }
   }, [userLocation]);
 
   return (
-    <div className="relative w-full h-full min-h-[400px] overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl">
-      {/* Leaflet Map DOM Node */}
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
+    <div className="relative w-full h-full bg-slate-950 flex flex-col overflow-hidden">
+      {/* Top Map Controls */}
+      <div className="absolute top-4 left-4 right-4 z-[400] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        {/* Network Pill */}
+        <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-700 shadow-xl pointer-events-auto">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs">
+            <Leaf className="w-3.5 h-3.5" />
+            <span>EcoFleet Network Map</span>
+          </div>
 
-      {/* Top Floating Map Controls */}
-      <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2 pointer-events-auto">
-        {/* Quick Hub Jump Selector */}
-        <div className="flex items-center gap-1 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-xl text-xs text-slate-200">
-          <MapPin className="w-3.5 h-3.5 text-amber-400" />
-          <span className="font-semibold text-slate-300 mr-1">Quick Hub:</span>
-          <button
-            onClick={() => mapRef.current?.flyTo([-1.9441, 30.0619], 15)}
-            className="hover:text-amber-400 px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
-          >
-            CBD
-          </button>
-          <span className="text-slate-600">|</span>
-          <button
-            onClick={() => mapRef.current?.flyTo([-1.9392, 30.0446], 15)}
-            className="hover:text-amber-400 px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
-          >
-            Nyabugogo
-          </button>
-          <span className="text-slate-600">|</span>
-          <button
-            onClick={() => mapRef.current?.flyTo([-1.9543, 30.1259], 15)}
-            className="hover:text-amber-400 px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
-          >
-            Kimironko
-          </button>
-          <span className="text-slate-600">|</span>
-          <button
-            onClick={() => mapRef.current?.flyTo([-1.9587, 30.1141], 15)}
-            className="hover:text-amber-400 px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
-          >
-            Remera
-          </button>
-          <span className="text-slate-600">|</span>
-          <button
-            onClick={() => mapRef.current?.flyTo([-1.9686, 30.1395], 15)}
-            className="hover:text-amber-400 px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
-          >
-            Airport
-          </button>
+          {activeRouteId ? (
+            <div className="flex items-center gap-1.5 text-xs text-slate-200 px-2 font-mono">
+              <span>Line:</span>
+              <span className="font-bold text-emerald-400">
+                {KIGALI_ROUTES.find((r) => r.id === activeRouteId)?.code}
+              </span>
+            </div>
+          ) : null}
         </div>
 
-        {/* Live GPS Telemetry Pulse Pill */}
-        <div className="flex items-center gap-2 bg-emerald-950/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-500/40 shadow-xl text-xs text-emerald-300 font-mono font-medium">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span>{buses.length} Kigali Buses Live</span>
+        {/* Action Controls */}
+        <div className="flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-700 shadow-xl pointer-events-auto text-xs flex-wrap">
+          {/* Map Style Switcher */}
+          <select
+            value={mapStyle}
+            onChange={(e) => setMapStyle(e.target.value as MapStyle)}
+            className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
+          >
+            <option value="voyager">Carto Light</option>
+            <option value="dark">Carto Dark</option>
+            <option value="streets">OpenStreetMap</option>
+            <option value="satellite">Satellite</option>
+          </select>
+
+          {/* Choke Points Toggle */}
+          <button
+            onClick={() => setShowChokePoints(!showChokePoints)}
+            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
+              showChokePoints
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
+            }`}
+            title="Toggle Kigali Major Transit Choke Points"
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Choke Points</span>
+          </button>
+
+          {/* Route Lines Toggle */}
+          <button
+            onClick={() => setShowRouteLines(!showRouteLines)}
+            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
+              showRouteLines || activeRouteId
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
+            }`}
+            title="Toggle Kigali Route Alignment Lines"
+          >
+            <RouteIcon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Route Lines</span>
+          </button>
+
+          {/* Dedicated Bus Lanes Toggle */}
+          <button
+            onClick={() => setShowDedicatedLanes(!showDedicatedLanes)}
+            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
+              showDedicatedLanes
+                ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
+            }`}
+            title="Toggle Dedicated Bus Priority Lanes"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Bus Lanes</span>
+          </button>
+
+          {/* Stops Toggle */}
+          <button
+            onClick={() => setShowStops(!showStops)}
+            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
+              showStops
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Stops</span>
+          </button>
+
+          {/* Locate Me */}
+          <button
+            onClick={onLocateUser}
+            className="px-2.5 py-1 rounded-xl text-slate-300 hover:text-white bg-slate-950 border border-slate-800 hover:border-emerald-500 transition flex items-center gap-1"
+          >
+            <Compass className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Locate</span>
+          </button>
         </div>
       </div>
 
-      {/* Right Floating Controls: Style Switcher, Locate Me, Zoom Controls */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 pointer-events-auto">
-        {/* Locate Passenger GPS */}
-        <button
-          onClick={onLocateUser}
-          title="Locate my position in Kigali"
-          className="p-2.5 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-slate-200 hover:text-blue-400 hover:bg-slate-800 shadow-xl transition active:scale-95 flex items-center justify-center"
-        >
-          <Navigation className="w-4 h-4" />
-        </button>
+      {/* Map Element */}
+      <div ref={mapContainerRef} className="w-full h-full flex-1 z-0" />
 
-        {/* Reset View to Full Kigali */}
-        <button
-          onClick={() => mapRef.current?.flyTo([-1.9441, 30.0619], 13, { duration: 0.8 })}
-          title="Reset to Full Kigali Overview"
-          className="p-2.5 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-slate-200 hover:text-amber-400 hover:bg-slate-800 shadow-xl transition active:scale-95 flex items-center justify-center"
-        >
-          <Compass className="w-4 h-4" />
-        </button>
-
-        {/* Map Layers Dropdown / Style Switcher */}
-        <div className="bg-slate-900/90 backdrop-blur-md p-1 rounded-xl border border-slate-700/80 shadow-xl flex flex-col gap-1 text-[11px]">
-          {(['voyager', 'dark', 'streets', 'satellite'] as MapStyle[]).map((style) => (
-            <button
-              key={style}
-              onClick={() => setMapStyle(style)}
-              className={`px-2 py-1 rounded text-left capitalize transition font-medium ${
-                mapStyle === style
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-              }`}
-            >
-              {style}
-            </button>
-          ))}
-        </div>
-
-        {/* Toggle Bus Stops */}
-        <button
-          onClick={() => setShowStops(!showStops)}
-          title={showStops ? 'Hide Bus Stops' : 'Show Bus Stops'}
-          className={`p-2.5 rounded-xl backdrop-blur-md border shadow-xl transition flex items-center justify-center ${
-            showStops
-              ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
-              : 'bg-slate-900/90 border-slate-700/80 text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <MapPin className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Map Bottom Legend */}
-      <div className="absolute bottom-3 right-3 z-10 hidden sm:flex items-center gap-3 bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 shadow-xl text-[11px] text-slate-300 pointer-events-auto">
+      {/* Bottom Floating Legend */}
+      <div className="absolute bottom-4 left-4 z-[400] flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-700 shadow-xl text-xs text-slate-300 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span>EcoFleet EV</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
           <span>KBS</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span>
-          <span>Royal Express</span>
+          <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+          <span>Royal</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-teal-600"></span>
           <span>RFTC</span>
         </div>
-        <div className="flex items-center gap-1.5 border-l border-slate-700 pl-2">
-          <span className="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
-          <span>Major Terminal</span>
+        <div className="w-px h-3 bg-slate-700 mx-1"></div>
+        <div className="flex items-center gap-1 text-[11px] text-rose-400">
+          <AlertTriangle className="w-3 h-3" />
+          <span>Choke Points</span>
         </div>
       </div>
     </div>

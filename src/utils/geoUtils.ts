@@ -46,7 +46,8 @@ export function getPolylineLengthKm(waypoints: [number, number][]): number {
 
 export function interpolatePolyline(
   waypoints: [number, number][],
-  progress: number // 0 to 1
+  progress: number, // 0 to 1
+  direction: 'outbound' | 'inbound' = 'outbound'
 ): { lat: number; lng: number; heading: number } {
   if (waypoints.length === 0) return { lat: -1.9441, lng: 30.0619, heading: 0 };
   if (waypoints.length === 1) return { lat: waypoints[0][0], lng: waypoints[0][1], heading: 0 };
@@ -66,7 +67,10 @@ export function interpolatePolyline(
       const fraction = segDist === 0 ? 0 : Math.min(1, Math.max(0, remaining / segDist));
       const lat = p1[0] + (p2[0] - p1[0]) * fraction;
       const lng = p1[1] + (p2[1] - p1[1]) * fraction;
-      const heading = calculateBearing(p1[0], p1[1], p2[0], p2[1]);
+      const heading =
+        direction === 'inbound'
+          ? calculateBearing(p2[0], p2[1], p1[0], p1[1])
+          : calculateBearing(p1[0], p1[1], p2[0], p2[1]);
       return { lat, lng, heading };
     }
     accumulated += segDist;
@@ -74,10 +78,15 @@ export function interpolatePolyline(
 
   const last = waypoints[waypoints.length - 1];
   const secondLast = waypoints[waypoints.length - 2];
+  const heading =
+    direction === 'inbound'
+      ? calculateBearing(last[0], last[1], secondLast[0], secondLast[1])
+      : calculateBearing(secondLast[0], secondLast[1], last[0], last[1]);
+
   return {
     lat: last[0],
     lng: last[1],
-    heading: calculateBearing(secondLast[0], secondLast[1], last[0], last[1]),
+    heading,
   };
 }
 

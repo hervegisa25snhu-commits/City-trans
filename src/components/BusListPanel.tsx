@@ -1,7 +1,21 @@
 import { useState } from 'react';
 import { BusTelemetry, TransitOperator } from '../types';
 import { KIGALI_ROUTES, KIGALI_BUS_STOPS } from '../data/kigaliTransitData';
-import { Search, Bus as BusIcon, Wifi, Wind, ShieldAlert, ArrowRight, Gauge, Users, Clock, Filter } from 'lucide-react';
+import {
+  Search,
+  Bus as BusIcon,
+  Wifi,
+  Wind,
+  ShieldAlert,
+  ArrowRight,
+  Gauge,
+  Users,
+  Clock,
+  Filter,
+  Leaf,
+  Zap,
+  BatteryCharging,
+} from 'lucide-react';
 import { formatEta } from '../utils/geoUtils';
 
 interface BusListPanelProps {
@@ -60,7 +74,7 @@ export default function BusListPanel({
               onClick={() => onSelectRoute(null)}
               className="text-xs text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 px-2.5 py-1 rounded-lg border border-blue-500/20 transition font-medium"
             >
-              Clear Route Filter
+              Clear Filter
             </button>
           )}
         </div>
@@ -90,6 +104,17 @@ export default function BusListPanel({
             All Operators
           </button>
           <button
+            onClick={() => setSelectedOperator('EcoFleet')}
+            className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition flex items-center gap-1 ${
+              selectedOperator === 'EcoFleet'
+                ? 'bg-emerald-600 text-white shadow'
+                : 'bg-slate-800/60 text-emerald-400 hover:bg-slate-800'
+            }`}
+          >
+            <Leaf className="w-3 h-3" />
+            <span>EcoFleet EV</span>
+          </button>
+          <button
             onClick={() => setSelectedOperator('KBS')}
             className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition ${
               selectedOperator === 'KBS'
@@ -113,8 +138,8 @@ export default function BusListPanel({
             onClick={() => setSelectedOperator('RFTC')}
             className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition ${
               selectedOperator === 'RFTC'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-slate-800/60 text-emerald-400 hover:bg-slate-800'
+                ? 'bg-teal-600 text-white shadow'
+                : 'bg-slate-800/60 text-teal-400 hover:bg-slate-800'
             }`}
           >
             RFTC
@@ -123,7 +148,7 @@ export default function BusListPanel({
 
         {/* Kigali Routes Filter Chips */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
-          <span className="text-[11px] text-slate-400 font-medium mr-1">Routes:</span>
+          <span className="text-[11px] text-slate-400 font-medium mr-1">Lines:</span>
           {KIGALI_ROUTES.map((route) => {
             const isSelected = activeRouteId === route.id;
             return (
@@ -180,83 +205,64 @@ export default function BusListPanel({
                     : 'bg-slate-950/40 hover:bg-slate-800/50 border border-slate-800/80 hover:border-slate-700'
                 }`}
               >
-                {/* Header: Route Badge, Plate, Operator */}
-                <div className="flex items-center justify-between mb-2">
+                {/* Header row */}
+                <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-2">
                     <span
-                      className="px-2.5 py-1 rounded-lg text-white font-mono font-bold text-xs shadow-sm"
-                      style={{ backgroundColor: route?.color || '#3b82f6' }}
+                      className="px-2 py-0.5 rounded-md text-white font-mono text-xs font-bold shadow-sm"
+                      style={{ backgroundColor: route?.color || '#2563eb' }}
                     >
-                      Line {route?.code || '101'}
+                      Line {route?.code}
                     </span>
-                    <div>
-                      <div className="text-xs font-bold text-slate-200 font-mono tracking-tight">
-                        {bus.plateNumber}
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        {bus.operator} • {bus.fleetNumber}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Occupancy Badge */}
-                  <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize ${occupancyBg}`}
-                  >
-                    {bus.occupancy === 'full' ? 'Standing Only' : `${bus.occupancy} Load`}
-                  </span>
-                </div>
-
-                {/* Route Name */}
-                <div className="text-xs text-slate-300 font-medium truncate mb-2">
-                  {route?.name}
-                </div>
-
-                {/* Telemetry Row: Speed, Next Stop, ETA */}
-                <div className="grid grid-cols-2 gap-2 bg-slate-900/60 p-2 rounded-lg border border-slate-800/60 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Gauge className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                    <span>
-                      <strong className="text-slate-100 font-mono">{bus.speedKmh}</strong> km/h
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>
-                      Next: <strong className="text-amber-300">{formatEta(bus.etaToNextStopSec)}</strong>
-                    </span>
-                  </div>
-
-                  <div className="col-span-2 flex items-center justify-between pt-1 border-t border-slate-800/40 text-slate-400 text-[10px]">
-                    <span className="truncate">Approaching: <strong className="text-slate-200">{nextStop?.name || 'Kigali Hub'}</strong></span>
-                    <span className="font-mono text-emerald-400">{bus.passengerCount}/{bus.capacity} pax</span>
-                  </div>
-                </div>
-
-                {/* Feature Icons */}
-                <div className="flex items-center justify-between mt-2 pt-1.5 text-[10px] text-slate-400">
-                  <div className="flex items-center gap-2">
-                    {bus.hasWifi && (
-                      <span className="flex items-center gap-0.5 text-blue-400">
-                        <Wifi className="w-3 h-3" /> WiFi
+                    <span className="font-mono text-xs font-bold text-slate-200">{bus.plateNumber}</span>
+                    {bus.isElectric && (
+                      <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold flex items-center gap-0.5">
+                        <Zap className="w-2.5 h-2.5 text-amber-300" />
+                        EV
                       </span>
                     )}
-                    {bus.hasAirConditioning && (
-                      <span className="flex items-center gap-0.5 text-cyan-400">
-                        <Wind className="w-3 h-3" /> AC
+                  </div>
+
+                  <span className="text-[11px] text-slate-400 font-medium">{bus.operator}</span>
+                </div>
+
+                {/* Next Stop ETA */}
+                <div className="flex items-center justify-between text-xs text-slate-300 mb-2">
+                  <div className="flex items-center gap-1.5 truncate max-w-[210px]">
+                    <span className="text-slate-500">Next:</span>
+                    <span className="font-semibold text-slate-200 truncate">{nextStop?.name || 'In Transit'}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 text-[11px]">
+                    <Clock className="w-3 h-3 text-amber-400" />
+                    <span>{formatEta(bus.etaToNextStopSec)}</span>
+                  </div>
+                </div>
+
+                {/* Bottom telemetry indicators */}
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1.5 border-t border-slate-800/60">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1 font-mono">
+                      <Gauge className="w-3 h-3 text-blue-400" />
+                      {bus.speedKmh} km/h
+                    </span>
+
+                    {bus.isElectric && bus.batterySocPercent !== undefined && (
+                      <span className="flex items-center gap-1 font-mono text-emerald-400">
+                        <BatteryCharging className="w-3 h-3 text-emerald-400" />
+                        {bus.batterySocPercent}%
                       </span>
-                    )}
-                    {bus.delayMinutes > 0 ? (
-                      <span className="text-amber-400 font-medium">+{bus.delayMinutes}m delay</span>
-                    ) : (
-                      <span className="text-emerald-400 font-medium">On Schedule</span>
                     )}
                   </div>
 
-                  <button className="text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-0.5">
-                    Track <ArrowRight className="w-3 h-3" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`px-1.5 py-0.5 rounded-md border font-semibold text-[10px] ${occupancyBg}`}>
+                      {bus.occupancy} load
+                    </span>
+
+                    {bus.hasWifi && <Wifi className="w-3 h-3 text-blue-400" title="Free 4G WiFi" />}
+                    {bus.hasAirConditioning && <Wind className="w-3 h-3 text-cyan-400" title="Air Conditioning" />}
+                  </div>
                 </div>
               </div>
             );

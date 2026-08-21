@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useMap } from '@vis.gl/react-google-maps';
+import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 
 interface GoogleMapsPolylineProps {
   key?: React.Key;
@@ -20,12 +20,13 @@ export default function GoogleMapsPolyline({
   onClick,
 }: GoogleMapsPolylineProps) {
   const map = useMap();
+  const mapsLib = useMapsLibrary('maps');
   const polylineRef = useRef<google.maps.Polyline | null>(null);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !mapsLib) return;
 
-    const polyline = new google.maps.Polyline({
+    const polyline = new mapsLib.Polyline({
       path,
       strokeColor: color,
       strokeOpacity: opacity,
@@ -43,11 +44,13 @@ export default function GoogleMapsPolyline({
     });
 
     return () => {
-      google.maps.event.removeListener(listener);
+      if (window.google?.maps?.event && listener) {
+        google.maps.event.removeListener(listener);
+      }
       polyline.setMap(null);
       polylineRef.current = null;
     };
-  }, [map, path, color, weight, opacity, isHighlighted, onClick]);
+  }, [map, mapsLib, path, color, weight, opacity, isHighlighted, onClick]);
 
   return null;
 }

@@ -1,18 +1,22 @@
 import express from "express";
+import http from "http";
 import path from "path";
+import { WebSocketServer, WebSocket } from "ws";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { INITIAL_BUS_FLEET, KIGALI_ROUTES, KIGALI_BUS_STOPS } from "./src/data/kigaliTransitData";
-import { BusTelemetry, TrafficCondition } from "./src/types";
-import { interpolatePolyline, calculateDistanceKm } from "./src/utils/geoUtils";
+import { GoogleGenAI, ThinkingLevel, Modality, LiveServerMessage } from "@google/genai";
+import { INITIAL_BUS_FLEET, KIGALI_ROUTES, KIGALI_BUS_STOPS, KIGALI_CHOKE_POINTS, KIGALI_DEDICATED_BUS_LANES } from "./src/data/kigaliTransitData";
+import { BusTelemetry, TrafficCondition, TransitChokePoint, DedicatedBusCorridor } from "./src/types";
+import { interpolatePolyline, calculateDistanceKm, getPolylineLengthKm } from "./src/utils/geoUtils";
 
 const app = express();
+const server = http.createServer(app);
 const PORT = 3000;
 
 app.use(express.json());
 
-// In-memory state for live bus telemetry simulation
+// In-memory state for live bus telemetry simulation & choke points
 let activeFleet: BusTelemetry[] = JSON.parse(JSON.stringify(INITIAL_BUS_FLEET));
+let activeChokePoints: TransitChokePoint[] = JSON.parse(JSON.stringify(KIGALI_CHOKE_POINTS));
 let currentTrafficCondition: TrafficCondition = "clear";
 let trafficSpeedMultiplier = 1.0;
 
@@ -51,8 +55,30 @@ setInterval(() => {
     const route = KIGALI_ROUTES.find((r) => r.id === bus.routeId);
     if (!route || route.waypoints.length === 0) return bus;
 
-    // Advance progress along route waypoints (loops continuously back and forth or circular)
-    const stepIncrement = 0.003 * speedFactor * trafficSpeedMultiplier;
+    // Determine speed based on traffic, bus type, and choke points
+    const baseSpeed = bus.isElectric ? 42 : 36;
+    let chokePenalty = 1.0;
+    let inChokePoint = false;
+
+    // Check if current position is in a choke point
+    for (const cp of activeChokePoints) {
+      const distToChokeM = calculateDistanceKm(bus.currentLat, bus.currentLng, cp.lat, cp.lng) * 1000;
+      if (distToChokeM <= cp.radiusMeters) {
+        inChokePoint = true;
+        chokePenalty = bus.isElectric ? 0.75 : cp.severity === 'critical' ? 0.4 : 0.6;
+        break;
+      }
+    }
+
+    const computedSpeed = Math.round(
+      Math.max(10, Math.min(58, (baseSpeed + (Math.random() * 6 - 3)) * speedFactor * chokePenalty))
+    );
+
+    // Calculate distance-based progress along the road polyline (1.5 seconds tick)
+    const totalRouteLengthKm = Math.max(1, getPolylineLengthKm(route.waypoints));
+    const distanceTravelledKm = (computedSpeed / 3600) * 1.5 * trafficSpeedMultiplier;
+    const stepIncrement = distanceTravelledKm / totalRouteLengthKm;
+
     let newProgress = bus.pathProgress;
     let newDirection = bus.direction;
 
@@ -70,13 +96,11 @@ setInterval(() => {
       }
     }
 
-    const { lat, lng, heading } = interpolatePolyline(route.waypoints, newProgress);
+    const { lat, lng, heading } = interpolatePolyline(route.waypoints, newProgress, newDirection);
 
-    // Compute next stop
     let closestStop = KIGALI_BUS_STOPS.find((s) => s.id === bus.nextStopId) || KIGALI_BUS_STOPS[0];
     const distToStopKm = calculateDistanceKm(lat, lng, closestStop.lat, closestStop.lng);
 
-    // If reached close to stop, switch to next stop along the route
     if (distToStopKm < 0.15 && route.stopIds.length > 0) {
       const currentStopIndex = route.stopIds.indexOf(closestStop.id);
       const nextIndex =
@@ -90,21 +114,27 @@ setInterval(() => {
       }
     }
 
-    const computedSpeed = Math.round(
-      Math.max(12, Math.min(58, (bus.speedKmh + (Math.random() * 6 - 3)) * speedFactor))
-    );
-    const etaSec = Math.max(15, Math.round((distToStopKm / Math.max(15, computedSpeed)) * 3600));
+    const etaSec = Math.max(15, Math.round((distToStopKm / Math.max(12, computedSpeed)) * 3600));
+
+    // Calculate dynamic battery consumption / regen for electric fleet
+    let updatedBattery = bus.batterySocPercent;
+    if (bus.isElectric && updatedBattery !== undefined) {
+      updatedBattery = Math.max(15, Math.min(100, Number((updatedBattery - 0.01).toFixed(2))));
+    }
 
     return {
       ...bus,
       currentLat: lat,
       currentLng: lng,
-      headingDeg: heading,
+      headingDeg: Math.round(heading),
       speedKmh: computedSpeed,
       pathProgress: newProgress,
       direction: newDirection,
       nextStopId: closestStop.id,
       etaToNextStopSec: etaSec,
+      batterySocPercent: updatedBattery,
+      status: inChokePoint && computedSpeed < 15 ? 'delayed' : 'in_transit',
+      delayMinutes: inChokePoint ? 3 : 0,
       lastUpdated: new Date().toISOString(),
     };
   });
@@ -121,6 +151,16 @@ app.get("/api/telemetry/buses", (req, res) => {
   });
 });
 
+// Telemetry: Fetch all Kigali Choke Points with real-time bottlenecks
+app.get("/api/telemetry/chokepoints", (req, res) => {
+  res.json({
+    timestamp: new Date().toISOString(),
+    chokePoints: activeChokePoints,
+    networkMapUrl: "https://ecofleet.rw/network-map-2/",
+    dedicatedCorridors: KIGALI_DEDICATED_BUS_LANES,
+  });
+});
+
 // Telemetry: Update traffic condition
 app.post("/api/telemetry/traffic", (req, res) => {
   const { condition, speedMultiplier } = req.body;
@@ -134,7 +174,7 @@ app.post("/api/telemetry/traffic", (req, res) => {
   });
 });
 
-// Telemetry: Driver GPS ping (Simulate or ingest driver GPS broadcast)
+// Telemetry: Driver GPS ping
 app.post("/api/telemetry/driver-ping", (req, res) => {
   const { busId, lat, lng, speed, heading, occupancy } = req.body;
   const busIndex = activeFleet.findIndex((b) => b.id === busId);
@@ -153,50 +193,78 @@ app.post("/api/telemetry/driver-ping", (req, res) => {
   res.status(404).json({ error: "Bus not found" });
 });
 
-// Gemini AI Kigali Transit Assistant Endpoint
-app.post("/api/gemini/transit-assistant", async (req, res) => {
+// Multi-turn Gemini Chat with Role System Instruction, Search Grounding, Maps Grounding, and Model tiers
+app.post("/api/gemini/chat", async (req, res) => {
   try {
-    const { prompt, mode = "maps_grounding", userLat, userLng } = req.body;
+    const {
+      messages = [],
+      prompt,
+      model = "gemini-3.5-flash", // 'gemini-3.1-pro-preview' | 'gemini-3.5-flash' | 'gemini-3.1-flash-lite'
+      enableSearchGrounding = false,
+      enableMapsGrounding = false,
+      userLat,
+      userLng,
+    } = req.body;
 
-    if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required." });
+    const query = prompt || (messages.length > 0 ? messages[messages.length - 1].content : "");
+    if (!query) {
+      return res.status(400).json({ error: "Query prompt is required." });
     }
 
     const ai = getGemini();
-    const systemPrompt = `You are the Official AI Transit Assistant for Kigali City (Rwanda) Public Transport.
-You have deep knowledge of:
-1. Kigali bus lines (101, 102, 104, 205, 301, 308, 502), operators (Kigali Bus Services / KBS, Royal Express, RFTC).
-2. Major transport terminals: Nyabugogo, Downtown (Gare Centrale), Kimironko, Remera (Giporoso), Kacyiru, Nyamirambo (Cosmos), Gikondo, Kanombe Airport, Batsinda, Kabuga.
-3. Tap&Go smart card fares regulated by RURA (ranging ~200 RWF to ~550 RWF per trip depending on zones 1-4).
-4. Kigali geography, hills, traffic hotspots (Nyabugogo-Kinamba junction, Sonatubes, Giporoso), and optimal bus transfers.
-Provide helpful, polite, structured advice in English with occasional Kinyarwanda greetings (e.g., 'Muraho', 'Mwaramutse'). Always include exact line numbers, boarding stops, estimated fares in RWF, and estimated travel times.`;
 
+    const systemInstruction = `You are the Official AI Transit Assistant and Commuter Concierge for Kigali City, Rwanda, integrated with the EcoFleet Rwanda Network Map (https://ecofleet.rw/network-map-2/) and RURA transit regulations.
+Your role:
+1. Provide accurate advice on Kigali bus routes (e.g., Line 101 Downtown-Nyabugogo-Remera-Kimironko, 102 Downtown-Nyamirambo, 104 Downtown-Gisozi-Batsinda, 205 Nyabugogo-Kimironko-Kabuga, 301 Downtown-Sonatubes-Airport, 308 Remera-Gikondo-Nyabugogo, 502 Kimironko-Batsinda).
+2. Detail Kigali transit operators: EcoFleet Rwanda (operating 100% Zero-Emission Electric buses with BasiGo), KBS (Kigali Bus Services), Royal Express, and RFTC.
+3. Provide live intelligence on Kigali's major transit choke points & bottlenecks:
+   - Nyabugogo Basin & Gitikinyoni Gateway (heavy intercity & trunk convergence)
+   - Sonatubes Roundabout & Rwandex Corridor (CBD / Airport / Bugesera tri-corridor bottleneck)
+   - Payage - Kanogo - Rwandex Swamp Valley (CBD - Kicukiro causeway)
+   - Giporoso (Ku Cya Mitsingi) / Remera (BK Arena & Airport bottleneck)
+   - Kinamba Junction & Poids Lourds (Kacyiru / Gisozi / Nyabugogo incline)
+   - Kimironko Market & Prison Roundabout
+   - Kicukiro Centre & Nyanza Bus Park
+   - Downtown - Former 1930 Prison - Muhima Gateway
+4. Explain City of Kigali dedicated bus priority lanes (active peak 06:00-07:00 & 17:00-21:00) and how EcoFleet electric buses bypass traffic bottlenecks.
+5. Calculate and explain Tap&Go card tariffs regulated by RURA (200 RWF base up to ~550 RWF for extended zones).
+6. Provide practical directions considering Kigali hills, transit junctions, and transfers.
+7. Offer pleasant customer service with friendly Rwandan greetings (e.g., 'Muraho', 'Mwaramutse', 'Mwiriwe').
+8. Provide structured bullet points with route numbers, boarding stops, fare estimates in RWF, and estimated travel times.`;
+
+    // Map model selection
+    let selectedModel = model;
+    if (model === "pro" || model === "gemini-pro") selectedModel = "gemini-3.1-pro-preview";
+    if (model === "flash" || model === "gemini-flash") selectedModel = "gemini-3.5-flash";
+    if (model === "lite" || model === "flash-lite") selectedModel = "gemini-3.1-flash-lite";
+
+    // Format previous turns for context
+    const conversationHistory = messages
+      .slice(0, -1)
+      .map((m: any) => `${m.role === "user" ? "Passenger" : "Transit AI"}: ${m.content}`)
+      .join("\n\n");
+
+    const fullContents = conversationHistory
+      ? `${conversationHistory}\n\nPassenger: ${query}`
+      : query;
+
+    const startTime = Date.now();
     let responseText = "";
     let groundingSources: { title: string; uri: string }[] = [];
-    const startTime = Date.now();
 
-    if (mode === "high_thinking") {
-      // High thinking reasoning mode with gemini-3.1-pro-preview
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: `${systemPrompt}\n\nUser request: ${prompt}`,
-        config: {
-          thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH },
-        },
-      });
-      responseText = response.text || "No response generated.";
-    } else if (mode === "search_grounding") {
-      // Search grounding with gemini-3.5-flash
+    // Configure tools according to features
+    if (enableSearchGrounding) {
+      // Search Grounding using gemini-3.5-flash
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: `${systemPrompt}\n\nSearch Kigali transit updates and answer: ${prompt}`,
+        contents: fullContents,
         config: {
+          systemInstruction,
           tools: [{ googleSearch: {} }],
         },
       });
-      responseText = response.text || "No response generated.";
+      responseText = response.text || "No response received.";
 
-      // Extract search grounding chunks
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
       if (chunks && Array.isArray(chunks)) {
         for (const chunk of chunks) {
@@ -208,15 +276,16 @@ Provide helpful, polite, structured advice in English with occasional Kinyarwand
           }
         }
       }
-    } else {
-      // Default: Maps Grounding with gemini-3.5-flash
+    } else if (enableMapsGrounding) {
+      // Maps Grounding using gemini-3.5-flash with user geolocation
       const lat = typeof userLat === "number" ? userLat : -1.9441;
       const lng = typeof userLng === "number" ? userLng : 30.0619;
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: `${systemPrompt}\n\nProvide Kigali transit and landmark directions for: ${prompt}`,
+        contents: fullContents,
         config: {
+          systemInstruction,
           tools: [{ googleMaps: {} }],
           toolConfig: {
             retrievalConfig: {
@@ -228,35 +297,181 @@ Provide helpful, polite, structured advice in English with occasional Kinyarwand
           },
         },
       });
-      responseText = response.text || "No response generated.";
+      responseText = response.text || "No response received.";
 
-      // Extract Maps grounding chunks
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
       if (chunks && Array.isArray(chunks)) {
         for (const chunk of chunks) {
           if (chunk.maps?.uri) {
             groundingSources.push({
-              title: chunk.maps.title || "View on Google Maps",
+              title: chunk.maps.title || "View Location on Google Maps",
               uri: chunk.maps.uri,
             });
           }
         }
       }
+    } else if (selectedModel === "gemini-3.1-pro-preview") {
+      // Complex tasks with gemini-3.1-pro-preview with High Thinking
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: fullContents,
+        config: {
+          systemInstruction,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH },
+        },
+      });
+      responseText = response.text || "No response received.";
+    } else if (selectedModel === "gemini-3.1-flash-lite") {
+      // Fast lightweight responses with gemini-3.1-flash-lite
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-flash-lite",
+        contents: fullContents,
+        config: {
+          systemInstruction,
+        },
+      });
+      responseText = response.text || "No response received.";
+    } else {
+      // General tasks with gemini-3.5-flash
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: fullContents,
+        config: {
+          systemInstruction,
+        },
+      });
+      responseText = response.text || "No response received.";
     }
 
     const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
 
     res.json({
       text: responseText,
-      mode,
+      modelUsed: selectedModel,
       groundingSources,
-      thinkingDurationSec: Number(durationSec),
+      durationSec: Number(durationSec),
     });
   } catch (error: any) {
-    console.error("Error calling Gemini API:", error);
+    console.error("Gemini Chat API Error:", error);
     res.status(500).json({
-      error: error.message || "Failed to process AI transit query.",
+      error: error.message || "Failed to generate AI response.",
     });
+  }
+});
+
+// WebSocket Server for Gemini Live API Voice Conversations (gemini-3.1-flash-live-preview)
+const wss = new WebSocketServer({ server, path: "/api/gemini/live" });
+
+wss.on("connection", async (clientWs: WebSocket) => {
+  console.log("Client connected to Gemini Live Voice session");
+  let liveSession: any = null;
+
+  try {
+    const ai = getGemini();
+
+    liveSession = await ai.live.connect({
+      model: "gemini-3.1-flash-live-preview",
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: "Zephyr" },
+          },
+        },
+        systemInstruction: `You are the interactive spoken voice assistant for Kigali City Transit in Rwanda.
+Keep spoken responses concise, warm, natural, and friendly (1-3 spoken sentences).
+You know all Kigali bus routes (101, 102, 104, 205, 301, 308, 502), operators KBS, Royal Express, RFTC, Tap&Go fares, and major terminals (Nyabugogo, Downtown, Kimironko, Remera Giporoso).`,
+      },
+      callbacks: {
+        onmessage: (message: LiveServerMessage) => {
+          if (clientWs.readyState !== WebSocket.OPEN) return;
+
+          const parts = message.serverContent?.modelTurn?.parts;
+          if (parts && parts.length > 0) {
+            for (const part of parts) {
+              if (part.inlineData?.data) {
+                clientWs.send(
+                  JSON.stringify({
+                    type: "audio",
+                    audio: part.inlineData.data,
+                  })
+                );
+              }
+              if (part.text) {
+                clientWs.send(
+                  JSON.stringify({
+                    type: "transcript",
+                    text: part.text,
+                  })
+                );
+              }
+            }
+          }
+
+          if (message.serverContent?.interrupted) {
+            clientWs.send(JSON.stringify({ type: "interrupted" }));
+          }
+          if (message.serverContent?.turnComplete) {
+            clientWs.send(JSON.stringify({ type: "turn_complete" }));
+          }
+        },
+        onclose: () => {
+          console.log("Gemini Live session closed");
+        },
+        onerror: (err: any) => {
+          console.error("Gemini Live session error:", err);
+          if (clientWs.readyState === WebSocket.OPEN) {
+            clientWs.send(
+              JSON.stringify({
+                type: "error",
+                error: err?.message || "Live audio session error",
+              })
+            );
+          }
+        },
+      },
+    });
+
+    clientWs.send(JSON.stringify({ type: "connected", message: "Live voice session ready." }));
+
+    clientWs.on("message", (raw: any) => {
+      try {
+        const msg = JSON.parse(raw.toString());
+        if (msg.type === "audio" && msg.audio && liveSession) {
+          liveSession.sendRealtimeInput({
+            audio: {
+              data: msg.audio,
+              mimeType: "audio/pcm;rate=16000",
+            },
+          });
+        } else if (msg.type === "text" && msg.text && liveSession) {
+          liveSession.sendRealtimeInput({
+            text: msg.text,
+          });
+        }
+      } catch (e) {
+        console.error("Error processing client audio chunk:", e);
+      }
+    });
+
+    clientWs.on("close", () => {
+      if (liveSession) {
+        try {
+          liveSession.close();
+        } catch (_) {}
+      }
+    });
+  } catch (err: any) {
+    console.error("Failed to initialize Gemini Live Voice session:", err);
+    if (clientWs.readyState === WebSocket.OPEN) {
+      clientWs.send(
+        JSON.stringify({
+          type: "error",
+          error: err.message || "Failed to initialize Gemini Live voice session",
+        })
+      );
+      clientWs.close();
+    }
   }
 });
 
@@ -275,8 +490,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Kigali Bus Tracker Server running on port ${PORT}`);
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log(`Kigali Bus Tracker & Live Voice Server running on port ${PORT}`);
   });
 }
 

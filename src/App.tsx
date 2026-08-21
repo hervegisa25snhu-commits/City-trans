@@ -1,40 +1,49 @@
 import { useState, useEffect } from 'react';
-import { BusTelemetry, BusStop, TrafficCondition } from './types';
-import { INITIAL_BUS_FLEET, KIGALI_BUS_STOPS, KIGALI_ROUTES } from './data/kigaliTransitData';
+import { BusTelemetry, BusStop, TrafficCondition, TransitChokePoint } from './types';
+import { INITIAL_BUS_FLEET, KIGALI_BUS_STOPS, KIGALI_ROUTES, KIGALI_CHOKE_POINTS, KIGALI_DEDICATED_BUS_LANES } from './data/kigaliTransitData';
 import InteractiveMap from './components/InteractiveMap';
 import GoogleTransitMap from './components/GoogleTransitMap';
 import BusListPanel from './components/BusListPanel';
 import StopArrivalsPanel from './components/StopArrivalsPanel';
 import BusDetailModal from './components/BusDetailModal';
 import TapAndGoWidget from './components/TapAndGoWidget';
-import AITransitAdvisor from './components/AITransitAdvisor';
+import GeminiTransitChat from './components/GeminiTransitChat';
+import VoiceTransitAssistant from './components/VoiceTransitAssistant';
 import LiveTelemetryControls from './components/LiveTelemetryControls';
+import EcoFleetNetworkMapPanel from './components/EcoFleetNetworkMapPanel';
+import { useAuth } from './context/AuthContext';
 import {
   Bus as BusIcon,
   MapPin,
   CreditCard,
   Sparkles,
+  Mic,
   Sliders,
-  Layers,
-  Radio,
   Clock,
-  Navigation,
-  Compass,
-  AlertCircle,
   Menu,
   X,
   Map as MapIcon,
+  LogIn,
+  LogOut,
+  User,
+  Radio,
+  Leaf,
+  AlertTriangle,
+  ExternalLink,
 } from 'lucide-react';
 
-type ActiveTab = 'fleet' | 'arrivals' | 'tap_and_go' | 'ai_advisor' | 'telemetry_sim';
+type ActiveTab = 'ecofleet_map' | 'fleet' | 'arrivals' | 'tap_and_go' | 'gemini_chat' | 'voice_assistant' | 'telemetry_sim';
 type MapEngine = 'google' | 'leaflet';
 
 export default function App() {
+  const { user, signInWithGoogle, logout, authError } = useAuth();
+
   const [buses, setBuses] = useState<BusTelemetry[]>(INITIAL_BUS_FLEET);
   const [selectedBus, setSelectedBus] = useState<BusTelemetry | null>(null);
   const [selectedStop, setSelectedStop] = useState<BusStop | null>(KIGALI_BUS_STOPS[0]);
+  const [selectedChokePoint, setSelectedChokePoint] = useState<TransitChokePoint | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('fleet');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('ecofleet_map');
   const [mapEngine, setMapEngine] = useState<MapEngine>('google');
   const [trafficCondition, setTrafficCondition] = useState<TrafficCondition>('clear');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -45,7 +54,6 @@ export default function App() {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      // Kigali is UTC+2 (Central Africa Time)
       setKigaliTime(
         now.toLocaleTimeString('en-GB', {
           timeZone: 'Africa/Kigali',
@@ -72,7 +80,6 @@ export default function App() {
             if (data.trafficCondition) {
               setTrafficCondition(data.trafficCondition);
             }
-            // Update selected bus reference if currently selected
             if (selectedBus) {
               const updated = data.buses.find((b: BusTelemetry) => b.id === selectedBus.id);
               if (updated) setSelectedBus(updated);
@@ -80,7 +87,7 @@ export default function App() {
           }
         }
       } catch (err) {
-        // Fallback to local background movement if fetch fails
+        // Local simulation fallback
       }
     };
 
@@ -89,7 +96,6 @@ export default function App() {
     return () => clearInterval(pollInterval);
   }, [selectedBus?.id]);
 
-  // Request passenger geolocation
   const handleLocateUser = () => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -100,7 +106,6 @@ export default function App() {
           });
         },
         () => {
-          // Fallback to Kigali City Center (Downtown) if permission denied or testing
           setUserLocation({
             lat: -1.9441,
             lng: 30.0619,
@@ -113,6 +118,10 @@ export default function App() {
         lng: 30.0619,
       });
     }
+  };
+
+  const handleFocusCoordinates = (lat: number, lng: number) => {
+    setUserLocation({ lat, lng });
   };
 
   const handleUpdateTraffic = async (condition: TrafficCondition, speedMultiplier?: number) => {
@@ -134,26 +143,41 @@ export default function App() {
       <header className="h-16 px-4 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 flex items-center justify-between z-30 shrink-0">
         {/* Brand & City Badge */}
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-500 text-white shadow-lg shadow-blue-500/20 flex items-center justify-center">
-            <BusIcon className="w-5 h-5" />
+          <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-blue-600 text-white shadow-lg shadow-emerald-500/20 flex items-center justify-center">
+            <Leaf className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
-                Kigali Bus Tracker
+                Kigali Transit &amp; EcoFleet Map
               </h1>
-              <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                LIVE GPS
+              <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                LIVE NETWORK 2.0
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              City of Kigali Public Transit Network • KBS, Royal Express, RFTC
+              City of Kigali • EcoFleet Rwanda • KBS • Royal Express • RFTC
             </p>
           </div>
         </div>
 
         {/* Center Tab Navigation (Desktop) */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
+        <nav className="hidden lg:flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
+          <button
+            onClick={() => {
+              setActiveTab('ecofleet_map');
+              setIsSidebarOpen(true);
+            }}
+            className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
+              activeTab === 'ecofleet_map' && isSidebarOpen
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30'
+                : 'text-emerald-400 hover:text-emerald-300'
+            }`}
+          >
+            <Leaf className="w-3.5 h-3.5" />
+            <span>EcoFleet Choke Points</span>
+          </button>
+
           <button
             onClick={() => {
               setActiveTab('fleet');
@@ -196,22 +220,37 @@ export default function App() {
             }`}
           >
             <CreditCard className="w-3.5 h-3.5" />
-            <span>Tap&Go Pass</span>
+            <span>Tap&amp;Go Pass</span>
           </button>
 
           <button
             onClick={() => {
-              setActiveTab('ai_advisor');
+              setActiveTab('gemini_chat');
               setIsSidebarOpen(true);
             }}
             className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
-              activeTab === 'ai_advisor' && isSidebarOpen
+              activeTab === 'gemini_chat' && isSidebarOpen
                 ? 'bg-purple-600 text-white shadow'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>AI Advisor</span>
+            <span>Gemini Chat</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('voice_assistant');
+              setIsSidebarOpen(true);
+            }}
+            className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
+              activeTab === 'voice_assistant' && isSidebarOpen
+                ? 'bg-pink-600 text-white shadow'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Mic className="w-3.5 h-3.5 text-pink-300" />
+            <span>Live Voice</span>
           </button>
 
           <button
@@ -226,29 +265,63 @@ export default function App() {
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>Telemetry Sim</span>
+            <span>Sim</span>
           </button>
         </nav>
 
-        {/* Right Info: Map Engine Toggle, Kigali Clock & Toggle Sidebar */}
-        <div className="flex items-center gap-2.5">
+        {/* Right Info: Google Auth, Map Engine Toggle, Kigali Clock & Toggle Sidebar */}
+        <div className="flex items-center gap-2">
+          {/* Google Sign-in / User Profile */}
+          {user ? (
+            <div className="flex items-center gap-2 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt={user.displayName || 'User'}
+                  className="w-5 h-5 rounded-full"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <User className="w-4 h-4 text-emerald-400" />
+              )}
+              <span className="font-semibold text-slate-200 hidden xl:inline">
+                {user.displayName?.split(' ')[0] || user.email?.split('@')[0]}
+              </span>
+              <button
+                onClick={logout}
+                className="text-slate-400 hover:text-rose-400 p-1 transition"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={signInWithGoogle}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition"
+              title="Sign in with Google Account"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+          )}
+
           {/* Map Engine Toggle */}
-          <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
             <button
               onClick={() => setMapEngine('google')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
                 mapEngine === 'google'
                   ? 'bg-blue-600 text-white shadow'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Switch to Google Maps Platform (Vector tiles, live traffic layer, satellite)"
+              title="Switch to Google Maps Platform"
             >
-              <MapIcon className="w-3.5 h-3.5" />
               <span>Google Maps</span>
             </button>
             <button
               onClick={() => setMapEngine('leaflet')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
+              className={`px-2 py-1 rounded-lg font-semibold transition flex items-center gap-1 ${
                 mapEngine === 'leaflet'
                   ? 'bg-slate-700 text-white shadow'
                   : 'text-slate-400 hover:text-slate-200'
@@ -259,17 +332,17 @@ export default function App() {
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-300 font-mono bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+          <div className="hidden xl:flex items-center gap-1.5 text-xs text-slate-300 font-mono bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800">
             <Clock className="w-3.5 h-3.5 text-amber-400" />
             <span>{kigaliTime}</span>
           </div>
 
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition md:flex items-center gap-1.5 text-xs font-semibold"
+            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 text-xs font-semibold"
           >
             {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            <span className="hidden sm:inline">{isSidebarOpen ? 'Hide Panel' : 'Show Panel'}</span>
+            <span className="hidden sm:inline">{isSidebarOpen ? 'Hide' : 'Panel'}</span>
           </button>
         </div>
       </header>
@@ -282,15 +355,21 @@ export default function App() {
             <GoogleTransitMap
               buses={buses}
               routes={KIGALI_ROUTES}
+              chokePoints={KIGALI_CHOKE_POINTS}
+              dedicatedCorridors={KIGALI_DEDICATED_BUS_LANES}
               selectedBus={selectedBus}
               selectedStop={selectedStop}
+              selectedChokePoint={selectedChokePoint}
               activeRouteId={activeRouteId}
-              onSelectBus={(bus) => {
-                setSelectedBus(bus);
-              }}
+              onSelectBus={(bus) => setSelectedBus(bus)}
               onSelectStop={(stop) => {
                 setSelectedStop(stop);
                 setActiveTab('arrivals');
+                setIsSidebarOpen(true);
+              }}
+              onSelectChokePoint={(cp) => {
+                setSelectedChokePoint(cp);
+                setActiveTab('ecofleet_map');
                 setIsSidebarOpen(true);
               }}
               userLocation={userLocation}
@@ -301,13 +380,17 @@ export default function App() {
               buses={buses}
               selectedBus={selectedBus}
               selectedStop={selectedStop}
+              selectedChokePoint={selectedChokePoint}
               activeRouteId={activeRouteId}
-              onSelectBus={(bus) => {
-                setSelectedBus(bus);
-              }}
+              onSelectBus={(bus) => setSelectedBus(bus)}
               onSelectStop={(stop) => {
                 setSelectedStop(stop);
                 setActiveTab('arrivals');
+                setIsSidebarOpen(true);
+              }}
+              onSelectChokePoint={(cp) => {
+                setSelectedChokePoint(cp);
+                setActiveTab('ecofleet_map');
                 setIsSidebarOpen(true);
               }}
               userLocation={userLocation}
@@ -318,13 +401,21 @@ export default function App() {
 
         {/* Right Control & Information Sidebar */}
         {isSidebarOpen && (
-          <aside className="w-full md:w-[420px] lg:w-[450px] h-full p-2.5 z-20 shrink-0 absolute md:relative right-0 top-0 bg-slate-950/80 md:bg-transparent backdrop-blur-md md:backdrop-blur-none">
-            {/* Mobile Tab Nav Switcher */}
-            <div className="flex md:hidden items-center justify-between pb-2 text-xs">
+          <aside className="w-full md:w-[420px] lg:w-[460px] h-full p-2.5 z-20 shrink-0 absolute md:relative right-0 top-0 bg-slate-950/80 md:bg-transparent backdrop-blur-md md:backdrop-blur-none">
+            {/* Mobile / Compact Tab Nav Switcher */}
+            <div className="flex lg:hidden items-center justify-between pb-2 text-xs">
               <div className="flex items-center gap-1 overflow-x-auto">
                 <button
+                  onClick={() => setActiveTab('ecofleet_map')}
+                  className={`px-2 py-1 rounded-lg font-bold ${
+                    activeTab === 'ecofleet_map' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-emerald-400'
+                  }`}
+                >
+                  EcoFleet
+                </button>
+                <button
                   onClick={() => setActiveTab('fleet')}
-                  className={`px-2.5 py-1 rounded-lg font-bold ${
+                  className={`px-2 py-1 rounded-lg font-bold ${
                     activeTab === 'fleet' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'
                   }`}
                 >
@@ -332,7 +423,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setActiveTab('arrivals')}
-                  className={`px-2.5 py-1 rounded-lg font-bold ${
+                  className={`px-2 py-1 rounded-lg font-bold ${
                     activeTab === 'arrivals' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400'
                   }`}
                 >
@@ -340,23 +431,31 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setActiveTab('tap_and_go')}
-                  className={`px-2.5 py-1 rounded-lg font-bold ${
+                  className={`px-2 py-1 rounded-lg font-bold ${
                     activeTab === 'tap_and_go' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-400'
                   }`}
                 >
-                  Tap&Go
+                  Tap&amp;Go
                 </button>
                 <button
-                  onClick={() => setActiveTab('ai_advisor')}
-                  className={`px-2.5 py-1 rounded-lg font-bold ${
-                    activeTab === 'ai_advisor' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                  onClick={() => setActiveTab('gemini_chat')}
+                  className={`px-2 py-1 rounded-lg font-bold ${
+                    activeTab === 'gemini_chat' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
                   }`}
                 >
-                  AI Advisor
+                  Chat
+                </button>
+                <button
+                  onClick={() => setActiveTab('voice_assistant')}
+                  className={`px-2 py-1 rounded-lg font-bold ${
+                    activeTab === 'voice_assistant' ? 'bg-pink-600 text-white' : 'bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  Voice
                 </button>
                 <button
                   onClick={() => setActiveTab('telemetry_sim')}
-                  className={`px-2.5 py-1 rounded-lg font-bold ${
+                  className={`px-2 py-1 rounded-lg font-bold ${
                     activeTab === 'telemetry_sim' ? 'bg-orange-600 text-white' : 'bg-slate-800 text-slate-400'
                   }`}
                 >
@@ -373,14 +472,22 @@ export default function App() {
             </div>
 
             {/* Active Sub-Panel Component */}
+            {activeTab === 'ecofleet_map' && (
+              <EcoFleetNetworkMapPanel
+                buses={buses}
+                selectedChokePoint={selectedChokePoint}
+                onSelectChokePoint={(cp) => setSelectedChokePoint(cp)}
+                onFocusCoordinates={handleFocusCoordinates}
+                onSelectStop={(stop) => setSelectedStop(stop)}
+              />
+            )}
+
             {activeTab === 'fleet' && (
               <BusListPanel
                 buses={buses}
                 selectedBus={selectedBus}
                 activeRouteId={activeRouteId}
-                onSelectBus={(bus) => {
-                  setSelectedBus(bus);
-                }}
+                onSelectBus={(bus) => setSelectedBus(bus)}
                 onSelectRoute={(routeId) => setActiveRouteId(routeId)}
               />
             )}
@@ -397,7 +504,9 @@ export default function App() {
 
             {activeTab === 'tap_and_go' && <TapAndGoWidget />}
 
-            {activeTab === 'ai_advisor' && <AITransitAdvisor userLocation={userLocation} />}
+            {activeTab === 'gemini_chat' && <GeminiTransitChat userLocation={userLocation} />}
+
+            {activeTab === 'voice_assistant' && <VoiceTransitAssistant />}
 
             {activeTab === 'telemetry_sim' && (
               <LiveTelemetryControls
@@ -411,9 +520,7 @@ export default function App() {
       </div>
 
       {/* Bus Detail Modal / Bottom Inspection Sheet */}
-      {selectedBus && (
-        <BusDetailModal bus={selectedBus} onClose={() => setSelectedBus(null)} />
-      )}
+      {selectedBus && <BusDetailModal bus={selectedBus} onClose={() => setSelectedBus(null)} />}
     </div>
   );
 }
