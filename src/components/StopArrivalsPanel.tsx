@@ -76,7 +76,7 @@ export default function StopArrivalsPanel({
             <div>
               <h2 className="text-base font-bold text-slate-100">{currentStop.name}</h2>
               <p className="text-xs text-slate-400 font-sans">
-                {currentStop.kinyarwandaName} • {currentStop.zone}
+                {currentStop.kinyarwandaName} • {currentStop.district || currentStop.zone}
               </p>
             </div>
           </div>
@@ -100,11 +100,20 @@ export default function StopArrivalsPanel({
             }}
             className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            <optgroup label="🏛️ Major Bus Parks & Terminals (Gares)">
+              {KIGALI_BUS_STOPS.filter((s) => s.isBusPark).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.district || stop.zone})
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="🚏 Mapped Bus Stops & Waypoints">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.district || stop.zone})
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 
