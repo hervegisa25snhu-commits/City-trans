@@ -100,11 +100,41 @@ export default function StopArrivalsPanel({
             }}
             className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            <optgroup label="🏛️ Major Bus Parks & Terminals (Gares)">
+              {KIGALI_BUS_STOPS.filter((s) => s.isBusPark).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.district || stop.zone})
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 Nyarugenge District Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Nyarugenge').map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.zone})
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 Gasabo District Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Gasabo').map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.zone})
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 Kicukiro District Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Kicukiro').map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.zone})
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 Outer Gateway Terminals & Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Outer Kigali').map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.zone})
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 
