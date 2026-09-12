@@ -1086,12 +1086,20 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationName: 'Kimironko Park',
     stopIds: [
       'stop_downtown',
+      'stop_centenary_utc',
+      'stop_kigali_city_market',
       'stop_chuk',
+      'stop_poids_lourds',
       'stop_nyabugogo',
       'stop_kinamba',
+      'stop_kacyiru_govt',
+      'stop_gishushu',
       'stop_kbc_heights',
       'stop_kcc',
+      'stop_chez_lando',
+      'stop_bk_arena',
       'stop_remera_giporoso',
+      'stop_kimironko_market',
       'stop_kimironko',
     ],
     waypoints: [
@@ -1138,7 +1146,15 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_nyamirambo',
     originName: 'Downtown CBD',
     destinationName: 'Nyamirambo Cosmos',
-    stopIds: ['stop_downtown', 'stop_chuk', 'stop_nyamirambo'],
+    stopIds: [
+      'stop_downtown',
+      'stop_centenary_utc',
+      'stop_kigali_city_market',
+      'stop_chuk',
+      'stop_biryogo',
+      'stop_saint_andre',
+      'stop_nyamirambo',
+    ],
     waypoints: [
       [-1.9441, 30.0619], // Downtown
       [-1.9465, 30.0602],
@@ -1166,7 +1182,17 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_batsinda',
     originName: 'Downtown CBD',
     destinationName: 'Batsinda Terminal',
-    stopIds: ['stop_downtown', 'stop_kinamba', 'stop_kacyiru_govt', 'stop_gisozi', 'stop_batsinda'],
+    stopIds: [
+      'stop_downtown',
+      'stop_centenary_utc',
+      'stop_poids_lourds',
+      'stop_kinamba',
+      'stop_kacyiru_bus_park',
+      'stop_kacyiru_govt',
+      'stop_gisozi',
+      'stop_kagugu_centre',
+      'stop_batsinda',
+    ],
     waypoints: [
       [-1.9441, 30.0619], // Downtown
       [-1.9405, 30.0590],
@@ -1197,7 +1223,23 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_kabuga',
     originName: 'Nyabugogo Terminal',
     destinationName: 'Kabuga Express',
-    stopIds: ['stop_nyabugogo', 'stop_kinamba', 'stop_kacyiru_govt', 'stop_nyarutarama', 'stop_kimironko', 'stop_kabuga'],
+    stopIds: [
+      'stop_nyabugogo',
+      'stop_gitikinyoni',
+      'stop_kinamba',
+      'stop_kacyiru_bus_park',
+      'stop_kacyiru_govt',
+      'stop_kacyiru_us_embassy',
+      'stop_gishushu',
+      'stop_nyarutarama',
+      'stop_kimironko',
+      'stop_kimironko_market',
+      'stop_ndera_hub',
+      'stop_mulindi',
+      'stop_rusororo',
+      'stop_masaka',
+      'stop_kabuga',
+    ],
     waypoints: [
       [-1.9392, 30.0446], // Nyabugogo Terminal
       [-1.9372, 30.0515],
@@ -1234,7 +1276,20 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_kanombe_airport',
     originName: 'Downtown CBD',
     destinationName: 'Kanombe Airport (KGL)',
-    stopIds: ['stop_downtown', 'stop_chuk', 'stop_sonatubes', 'stop_remera_giporoso', 'stop_kanombe_airport'],
+    stopIds: [
+      'stop_downtown',
+      'stop_chuk',
+      'stop_sopetrad',
+      'stop_kanogo',
+      'stop_rwandex',
+      'stop_sonatubes',
+      'stop_iprc_kigali',
+      'stop_kicukiro_centre',
+      'stop_remera_giporoso',
+      'stop_kabeza_market',
+      'stop_rubirizi',
+      'stop_kanombe_airport',
+    ],
     waypoints: [
       [-1.9441, 30.0619], // Downtown CBD
       [-1.9482, 30.0594], // CHUK
@@ -1266,7 +1321,19 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_nyabugogo',
     originName: 'Remera Giporoso',
     destinationName: 'Nyabugogo Terminal',
-    stopIds: ['stop_remera_giporoso', 'stop_sonatubes', 'stop_gikondo', 'stop_chuk', 'stop_nyabugogo'],
+    stopIds: [
+      'stop_remera_giporoso',
+      'stop_chez_lando',
+      'stop_sonatubes',
+      'stop_iprc_kigali',
+      'stop_gikondo',
+      'stop_gatenga',
+      'stop_rwandex',
+      'stop_kanogo',
+      'stop_sopetrad',
+      'stop_chuk',
+      'stop_nyabugogo',
+    ],
     waypoints: [
       [-1.9587, 30.1141], // Remera Giporoso
       [-1.9600, 30.1080],
@@ -1335,7 +1402,18 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_kanombe_airport',
     originName: 'Downtown CBD',
     destinationName: 'Kanombe Hub',
-    stopIds: ['stop_downtown', 'stop_sonatubes', 'stop_kabeza_market', 'stop_busanza', 'stop_kanombe_airport'],
+    stopIds: [
+      'stop_downtown',
+      'stop_sopetrad',
+      'stop_kanogo',
+      'stop_rwandex',
+      'stop_sonatubes',
+      'stop_niboye',
+      'stop_kabeza_market',
+      'stop_samuduha',
+      'stop_busanza',
+      'stop_kanombe_airport',
+    ],
     waypoints: [
       [-1.9441, 30.0619], // Downtown
       [-1.9520, 30.0670],
@@ -1363,7 +1441,18 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_gahanga',
     originName: 'Nyabugogo Terminal',
     destinationName: 'Gahanga Stadium',
-    stopIds: ['stop_nyabugogo', 'stop_downtown', 'stop_sonatubes', 'stop_kicukiro_centre', 'stop_gahanga'],
+    stopIds: [
+      'stop_nyabugogo',
+      'stop_downtown',
+      'stop_kanogo',
+      'stop_rwandex',
+      'stop_sonatubes',
+      'stop_iprc_kigali',
+      'stop_kicukiro_centre',
+      'stop_nyanza_kicukiro',
+      'stop_gahanga_sector',
+      'stop_gahanga',
+    ],
     waypoints: [
       [-1.9392, 30.0446], // Nyabugogo
       [-1.9422, 30.0478],
@@ -1393,7 +1482,20 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_batsinda',
     originName: 'Kimironko Park',
     destinationName: 'Batsinda Terminal',
-    stopIds: ['stop_kimironko', 'stop_kibagabaga', 'stop_nyarutarama', 'stop_gisozi', 'stop_batsinda'],
+    stopIds: [
+      'stop_kimironko',
+      'stop_kimironko_market',
+      'stop_kibagabaga',
+      'stop_kibagabaga_church',
+      'stop_kinyinya_centre',
+      'stop_kinyinya_park',
+      'stop_nyarutarama',
+      'stop_bk_arena',
+      'stop_gishushu',
+      'stop_gisozi',
+      'stop_kagugu_centre',
+      'stop_batsinda',
+    ],
     waypoints: [
       [-1.949688, 30.125647], // Gare ya Kimironko
       [-1.9543, 30.1259], // Kimironko Market
