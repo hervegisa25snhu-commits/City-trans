@@ -152,7 +152,7 @@ export const KIGALI_DEDICATED_BUS_LANES: DedicatedBusCorridor[] = [
     id: 'lane_downtown_sonatube_giporoso',
     name: 'Corridor 1: Downtown – Payage – Kanogo – Rwandex – Sonatube – Giporoso',
     kinyarwandaName: 'Umuhanda wihariye: Mu Mujyi – Payage – Kanogo – Rwandex – Sonatube – Giporoso',
-    color: '#10B981', // Emerald green
+    color: '#10B981',
     waypoints: [
       [-1.9441, 30.0619],
       [-1.9482, 30.0594],
@@ -172,7 +172,7 @@ export const KIGALI_DEDICATED_BUS_LANES: DedicatedBusCorridor[] = [
     id: 'lane_sonatube_nyanza',
     name: 'Corridor 2: Sonatube – Kicukiro Centre – Nyanza Bus Park',
     kinyarwandaName: 'Umuhanda wihariye: Sonatube – Kicukiro Centre – Gare ya Nyanza',
-    color: '#06B6D4', // Cyan
+    color: '#06B6D4',
     waypoints: [
       [-1.9660, 30.0910],
       [-1.9710, 30.0970],
@@ -189,7 +189,7 @@ export const KIGALI_DEDICATED_BUS_LANES: DedicatedBusCorridor[] = [
     id: 'lane_downtown_nyabugogo_1930',
     name: 'Corridor 3: Downtown – Former 1930 Prison – Nyabugogo Terminal',
     kinyarwandaName: 'Umuhanda wihariye: Mu Mujyi – Gereza ya 1930 – Gare ya Nyabugogo',
-    color: '#8B5CF6', // Purple
+    color: '#8B5CF6',
     waypoints: [
       [-1.9441, 30.0619],
       [-1.9420, 30.0560],
@@ -206,7 +206,7 @@ export const KIGALI_DEDICATED_BUS_LANES: DedicatedBusCorridor[] = [
     id: 'lane_downtown_gloria_chuk',
     name: 'Corridor 4: Downtown – Gloria Hotel – City Plaza – CHUK',
     kinyarwandaName: 'Umuhanda wihariye: Mu Mujyi – Gloria – CHUK',
-    color: '#F59E0B', // Amber
+    color: '#F59E0B',
     waypoints: [
       [-1.9441, 30.0619],
       [-1.9460, 30.0600],
@@ -222,7 +222,7 @@ export const KIGALI_DEDICATED_BUS_LANES: DedicatedBusCorridor[] = [
     id: 'lane_ecofleet_green_trunk',
     name: 'EcoFleet Green Trunk: Nyabugogo – Kinamba – Kacyiru – Gishushu – Remera',
     kinyarwandaName: 'Umuhanda mugari wa EcoFleet: Nyabugogo – Kacyiru – Remera',
-    color: '#10B981', // Emerald
+    color: '#10B981',
     waypoints: [
       [-1.9392, 30.0446],
       [-1.9360, 30.0610],
@@ -239,9 +239,9 @@ export const KIGALI_DEDICATED_BUS_LANES: DedicatedBusCorridor[] = [
 ];
 
 export const KIGALI_BUS_STOPS: BusStop[] = [
-  // ==========================================
-  // MAJOR BUS PARKS (GARES) ACROSS KIGALI
-  // ==========================================
+  // =========================================================================
+  // MAJOR BUS TERMINALS & GARES ACROSS KIGALI
+  // =========================================================================
   {
     id: 'stop_nyabugogo',
     name: 'Nyabugogo Bus Terminal',
@@ -256,7 +256,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Public Restrooms', 'Intercity Connections', 'Wheelchair Access', 'EV Supercharger Depot', '24/7 Security'],
     popularLandmark: 'Main National & Intercity Bus Hub & EcoFleet Central Depot',
     isEvChargingHub: true,
-    connectingLines: ['101', '104', '205', '308'],
+    connectingLines: ['101', '104', '205', '308', '401'],
     dailyPassengerVolume: '95,000+ commuters/day',
   },
   {
@@ -271,9 +271,9 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     parkType: 'major_hub',
     bayCapacity: 40,
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Kiosk', 'Wheelchair Access', 'EcoFleet EV Fast Charger', 'AC Group Customer Care'],
-    popularLandmark: 'Centenary House, Kigali City Market & Former 1930',
+    popularLandmark: 'Centenary House, Kigali City Market & Former 1930 Prison',
     isEvChargingHub: true,
-    connectingLines: ['101', '102', '104', '301'],
+    connectingLines: ['101', '102', '104', '301', '310', '401'],
     dailyPassengerVolume: '70,000+ commuters/day',
   },
   {
@@ -290,7 +290,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Wheelchair Access', 'Retail Shops', 'EcoFleet EV Fast Charger', 'Restrooms'],
     popularLandmark: 'BK Arena & Amahoro National Stadium & Ku Cya Mitsingi',
     isEvChargingHub: true,
-    connectingLines: ['101', '301', '308', '502'],
+    connectingLines: ['101', '205', '301', '308', '502'],
     dailyPassengerVolume: '60,000+ commuters/day',
   },
   {
@@ -324,7 +324,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'EcoFleet EV Fast Charger', 'Restrooms', 'Passenger Waiting Lounge'],
     popularLandmark: 'Kinyinya Sector Headquarters, Kinyinya Market & Green Hills',
     isEvChargingHub: true,
-    connectingLines: ['309', '489', '502'],
+    connectingLines: ['309', '502'],
     dailyPassengerVolume: '20,000+ commuters/day',
   },
   {
@@ -375,8 +375,25 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Market Gate', 'Mobile Money Booths'],
     popularLandmark: 'Kicukiro District Headquarters & Commercial Market',
     isEvChargingHub: false,
-    connectingLines: ['301', '308'],
+    connectingLines: ['301', '308', '401'],
     dailyPassengerVolume: '25,000+ commuters/day',
+  },
+  {
+    id: 'stop_kanombe_airport',
+    name: 'Kanombe Hub / Kigali Int. Airport (KGL)',
+    kinyarwandaName: 'Gare ya Kanombe ku Kibuga cy\'Indege',
+    zone: 'Zone 3 (Kicukiro East)',
+    district: 'Kicukiro',
+    lat: -1.9686,
+    lng: 30.1395,
+    isBusPark: true,
+    parkType: 'regional_terminal',
+    bayCapacity: 20,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Luggage Assistance', 'Security Gate', 'EcoFleet EV Shuttle Bay'],
+    popularLandmark: 'Kigali International Airport Terminal & Rwanda Military Hospital',
+    isEvChargingHub: true,
+    connectingLines: ['301', '310'],
+    dailyPassengerVolume: '28,000+ commuters/day',
   },
   {
     id: 'stop_kabuga',
@@ -396,13 +413,47 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     dailyPassengerVolume: '20,000+ commuters/day',
   },
   {
+    id: 'stop_ruyenzi_gateway',
+    name: 'Ruyenzi / Kamonyi Gateway Terminal',
+    kinyarwandaName: 'Gare ya Ruyenzi / Kamonyi',
+    zone: 'Zone 1 (Outer West)',
+    district: 'Outer Kigali',
+    lat: -1.9425,
+    lng: 30.0020,
+    isBusPark: true,
+    parkType: 'regional_terminal',
+    bayCapacity: 25,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Restrooms', 'Southern Province Intercity Link'],
+    popularLandmark: 'Ruyenzi Center & Nyabarongo Western Bridge Gateway',
+    isEvChargingHub: false,
+    connectingLines: ['101', '102'],
+    dailyPassengerVolume: '22,000+ commuters/day',
+  },
+  {
+    id: 'stop_kacyiru_bus_park',
+    name: 'Kacyiru Bus Terminal',
+    kinyarwandaName: 'Gare ya Kacyiru',
+    zone: 'Zone 2 (Gasabo / Kacyiru)',
+    district: 'Gasabo',
+    lat: -1.9325,
+    lng: 30.0835,
+    isBusPark: true,
+    parkType: 'feeder_park',
+    bayCapacity: 20,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Government Offices Connection'],
+    popularLandmark: 'Kacyiru Sector Office, National Library & US Embassy Corridor',
+    isEvChargingHub: false,
+    connectingLines: ['104', '205'],
+    dailyPassengerVolume: '24,000+ commuters/day',
+  },
+  {
     id: 'stop_batsinda',
     name: 'Batsinda Terminal',
     kinyarwandaName: 'Gare ya Batsinda',
     zone: 'Zone 2 (Gasabo North)',
     district: 'Gasabo',
-    lat: -1.9050,
-    lng: 30.0700,
+    lat: -1.905434,
+    lng: 30.079796,
     isBusPark: true,
     parkType: 'feeder_park',
     bayCapacity: 20,
@@ -430,23 +481,6 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     dailyPassengerVolume: '22,000+ commuters/day',
   },
   {
-    id: 'stop_masaka',
-    name: 'Masaka Hospital Terminal',
-    kinyarwandaName: 'Gare ya Masaka / Ibitaro',
-    zone: 'Zone 4 (Outer East)',
-    district: 'Kicukiro',
-    lat: -2.0010,
-    lng: 30.1980,
-    isBusPark: true,
-    parkType: 'feeder_park',
-    bayCapacity: 18,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Hospital Access Ramp'],
-    popularLandmark: 'Masaka District Hospital & Dubai Ports World Logistics Hub',
-    isEvChargingHub: false,
-    connectingLines: ['205', '301'],
-    dailyPassengerVolume: '15,000+ commuters/day',
-  },
-  {
     id: 'stop_zindiro',
     name: 'Zindiro Bus Terminal',
     kinyarwandaName: 'Gare ya Zindiro / Bumbogo',
@@ -464,6 +498,40 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     dailyPassengerVolume: '12,000+ commuters/day',
   },
   {
+    id: 'stop_ndera_hub',
+    name: 'Ndera Neuro-Psychiatric Hub Stop',
+    kinyarwandaName: 'Gare ya Ndera / Ibitaro',
+    zone: 'Zone 2 (Gasabo East)',
+    district: 'Gasabo',
+    lat: -1.9480,
+    lng: 30.1780,
+    isBusPark: true,
+    parkType: 'feeder_park',
+    bayCapacity: 18,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Hospital Access Ramp'],
+    popularLandmark: 'Ndera Specialized Hospital & Ndera Technical College',
+    isEvChargingHub: false,
+    connectingLines: ['205', '309'],
+    dailyPassengerVolume: '14,000+ commuters/day',
+  },
+  {
+    id: 'stop_masaka',
+    name: 'Masaka Hospital Terminal',
+    kinyarwandaName: 'Gare ya Masaka / Ibitaro',
+    zone: 'Zone 4 (Outer East)',
+    district: 'Kicukiro',
+    lat: -2.0010,
+    lng: 30.1980,
+    isBusPark: true,
+    parkType: 'feeder_park',
+    bayCapacity: 18,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Hospital Access Ramp'],
+    popularLandmark: 'Masaka District Hospital & Dubai Ports World Logistics Hub',
+    isEvChargingHub: false,
+    connectingLines: ['205', '301'],
+    dailyPassengerVolume: '15,000+ commuters/day',
+  },
+  {
     id: 'stop_gahanga',
     name: 'Gahanga Stadium Terminal',
     kinyarwandaName: 'Gare ya Gahanga',
@@ -477,38 +545,33 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
     popularLandmark: 'Gahanga International Cricket Stadium',
     isEvChargingHub: false,
-    connectingLines: ['301'],
+    connectingLines: ['301', '401'],
     dailyPassengerVolume: '10,000+ commuters/day',
   },
-  {
-    id: 'stop_kanombe_airport',
-    name: 'Kanombe Hub / Kigali Int. Airport (KGL)',
-    kinyarwandaName: 'Gare ya Kanombe ku Kibuga cy\'Indege',
-    zone: 'Zone 3 (Kicukiro East)',
-    district: 'Kicukiro',
-    lat: -1.9686,
-    lng: 30.1395,
-    isBusPark: true,
-    parkType: 'regional_terminal',
-    bayCapacity: 20,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Luggage Assistance', 'Security Gate', 'EcoFleet EV Shuttle Bay'],
-    popularLandmark: 'Kigali International Airport Terminal & Rwanda Military Hospital',
-    isEvChargingHub: true,
-    connectingLines: ['301'],
-    dailyPassengerVolume: '28,000+ commuters/day',
-  },
 
-  // ==========================================
-  // CRUCIAL INTERMEDIATE BUS STOPS (ZONE 1: NYARUGENGE)
-  // ==========================================
+  // =========================================================================
+  // NYARUGENGE DISTRICT INTERMEDIATE BUS STOPS (ZONE 1)
+  // =========================================================================
+  {
+    id: 'stop_kigali_city_market',
+    name: 'Kigali City Market / Nyarugenge Market',
+    kinyarwandaName: 'Isoko rya Nyarugenge',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.9468,
+    lng: 30.0588,
+    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent', 'Market Direct Entrance'],
+    popularLandmark: 'Kigali City Market Plaza & Commercial Hub',
+    connectingLines: ['101', '102', '104'],
+  },
   {
     id: 'stop_chuk',
     name: 'CHUK / Car-Free Zone',
     kinyarwandaName: 'CHUK / Mu Mujyi',
     zone: 'Zone 1 (Nyarugenge)',
     district: 'Nyarugenge',
-    lat: -1.9482,
-    lng: 30.0594,
+    lat: -1.955928,
+    lng: 30.060997,
     facilities: ['Shelter', 'Lighting', 'Wheelchair Access', 'Hospital Emergency Access'],
     popularLandmark: 'University Teaching Hospital of Kigali (CHUK)',
     connectingLines: ['101', '102', '301', '308'],
@@ -526,6 +589,30 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['101', '102', '104'],
   },
   {
+    id: 'stop_city_plaza',
+    name: 'City Plaza / Bellevue Stop',
+    kinyarwandaName: 'City Plaza',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.9447,
+    lng: 30.058483,
+    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent'],
+    popularLandmark: 'City Plaza Commercial Mall & Avenue de l\'Armée',
+    connectingLines: ['101', '102'],
+  },
+  {
+    id: 'stop_gereza_1930',
+    name: 'Former 1930 Prison / Muhima Gateway',
+    kinyarwandaName: 'Gereza ya 1930 / Muhima',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.94514,
+    lng: 30.054696,
+    facilities: ['Shelter', 'Lighting', 'Dedicated Bus Slipway'],
+    popularLandmark: 'Former 1930 Central Prison Heritage Site & Muhima Hill',
+    connectingLines: ['101', '104'],
+  },
+  {
     id: 'stop_poids_lourds',
     name: 'Poids Lourds / Muhima Lower Stop',
     kinyarwandaName: 'Poids Lourds / Muhima',
@@ -534,7 +621,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lat: -1.9405,
     lng: 30.0490,
     facilities: ['Shelter', 'Lighting'],
-    popularLandmark: 'Muhima Heavy Vehicle Avenue & Depot',
+    popularLandmark: 'Muhima Heavy Vehicle Avenue & Logistics Depot',
     connectingLines: ['101', '104'],
   },
   {
@@ -548,6 +635,18 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
     popularLandmark: 'Gisozi Junction & Kigali Genocide Memorial Ascent',
     connectingLines: ['101', '104', '205'],
+  },
+  {
+    id: 'stop_gakinjiro',
+    name: 'Gakinjiro / Craft Market Stop',
+    kinyarwandaName: 'Gakinjiro',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.926035,
+    lng: 30.07062,
+    facilities: ['Shelter', 'Lighting', 'Craft Market Entrance'],
+    popularLandmark: 'Gakinjiro Woodwork & Craft Industrial Market',
+    connectingLines: ['104'],
   },
   {
     id: 'stop_biryogo',
@@ -574,6 +673,30 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['102'],
   },
   {
+    id: 'stop_cafe_nyakabanda',
+    name: 'Cafe de Nyakabanda / Rwezamenyo',
+    kinyarwandaName: 'Cafe de Nyakabanda',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.970611,
+    lng: 30.048262,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Nyakabanda Sector & Rwezamenyo Market',
+    connectingLines: ['102'],
+  },
+  {
+    id: 'stop_cosmos_roundabout',
+    name: 'Cosmos Roundabout / Nyamirambo',
+    kinyarwandaName: 'Cosmos',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.974672,
+    lng: 30.053853,
+    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent'],
+    popularLandmark: 'Cosmos Roundabout & Biryogo Gate',
+    connectingLines: ['102'],
+  },
+  {
     id: 'stop_gitikinyoni',
     name: 'Gitikinyoni Gateway Stop',
     kinyarwandaName: 'Gitikinyoni',
@@ -585,10 +708,58 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     popularLandmark: 'Western Province Gateway & Nyabarongo River',
     connectingLines: ['101', '205'],
   },
+  {
+    id: 'stop_rebero',
+    name: 'Mount Rebero / Cultural Park Stop',
+    kinyarwandaName: 'Ku Murenge wa Rebero',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.9820,
+    lng: 30.0680,
+    facilities: ['Shelter', 'Lighting', 'Scenic Viewpoint Platform'],
+    popularLandmark: 'Mount Rebero, Canal Olympia & Cultural Village',
+    connectingLines: ['102', '308'],
+  },
+  {
+    id: 'stop_kanyinya',
+    name: 'Kanyinya / Karuruma Stop',
+    kinyarwandaName: 'Kanyinya Karuruma',
+    zone: 'Zone 1 (Nyarugenge North)',
+    district: 'Nyarugenge',
+    lat: -1.9050,
+    lng: 30.0410,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Kanyinya Sector Office & Northern Valley Highway',
+    connectingLines: ['104'],
+  },
+  {
+    id: 'stop_camp_kigali',
+    name: 'Camp Kigali / CHUK West Stop',
+    kinyarwandaName: 'Camp Kigali',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.958014,
+    lng: 30.060737,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Camp Kigali Conference Centre & Serena Hotel Ascent',
+    connectingLines: ['102'],
+  },
+  {
+    id: 'stop_epa_school',
+    name: 'EPA School / CHUK Slope Stop',
+    kinyarwandaName: 'EPA',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.955606,
+    lng: 30.058178,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'École Primaire Autonome (EPA) & CHUK Hospital Gate',
+    connectingLines: ['102'],
+  },
 
-  // ==========================================
-  // CRUCIAL INTERMEDIATE BUS STOPS (ZONE 2: GASABO)
-  // ==========================================
+  // =========================================================================
+  // GASABO DISTRICT INTERMEDIATE BUS STOPS (ZONE 2)
+  // =========================================================================
   {
     id: 'stop_kacyiru_govt',
     name: 'Kacyiru Ministries Stop (MININFRA)',
@@ -639,13 +810,25 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['101', '205'],
   },
   {
+    id: 'stop_gishushu',
+    name: 'Gishushu / RDB Flyover Stop',
+    kinyarwandaName: 'Gishushu kuri RDB',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.95303,
+    lng: 30.101407,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Pedestrian Flyover Bridge'],
+    popularLandmark: 'Rwanda Development Board (RDB) & Ministry of Justice',
+    connectingLines: ['101', '205', '502'],
+  },
+  {
     id: 'stop_chez_lando',
     name: 'Chez Lando Junction Stop',
     kinyarwandaName: 'Chez Lando',
     zone: 'Zone 2 (Gasabo)',
     district: 'Gasabo',
-    lat: -1.9570,
-    lng: 30.1115,
+    lat: -1.959684,
+    lng: 30.108217,
     facilities: ['Shelter', 'Lighting', 'Tap&Go Agent'],
     popularLandmark: 'Hotel Chez Lando & Remera High Street',
     connectingLines: ['101', '308', '502'],
@@ -660,6 +843,18 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.1110,
     facilities: ['Shelter', 'Lighting', 'High-Capacity Turnstiles', 'Event Queue Area'],
     popularLandmark: 'BK Arena (10,000 seat indoor stadium) & Amahoro Stadium',
+    connectingLines: ['101', '502'],
+  },
+  {
+    id: 'stop_control_technique',
+    name: 'Contrôle Technique / Remera East',
+    kinyarwandaName: 'Contrôle Technique',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.951565,
+    lng: 30.11563,
+    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent'],
+    popularLandmark: 'National Police Vehicle Inspection Centre (Contrôle Technique)',
     connectingLines: ['101', '502'],
   },
   {
@@ -687,6 +882,18 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['101', '205', '309', '502'],
   },
   {
+    id: 'stop_four_square',
+    name: 'Four Square / Kimironko East',
+    kinyarwandaName: 'Four Square',
+    zone: 'Zone 2 (Gasabo East)',
+    district: 'Gasabo',
+    lat: -1.945092,
+    lng: 30.128922,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Four Square Church & KG 15 Ave',
+    connectingLines: ['309', '502'],
+  },
+  {
     id: 'stop_kibagabaga',
     name: 'Kibagabaga Hospital Stop',
     kinyarwandaName: 'Ibitaro bya Kibagabaga',
@@ -696,7 +903,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.1200,
     facilities: ['Shelter', 'Lighting', 'Hospital Access Ramp', 'Tap&Go Validator'],
     popularLandmark: 'Kibagabaga District Hospital & Emergency Wing',
-    connectingLines: ['309', '489', '502'],
+    connectingLines: ['309', '502'],
   },
   {
     id: 'stop_kibagabaga_church',
@@ -708,7 +915,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.1180,
     facilities: ['Shelter', 'Lighting'],
     popularLandmark: 'Kibagabaga Catholic Parish & KG 21 Ave',
-    connectingLines: ['309', '489'],
+    connectingLines: ['309'],
   },
   {
     id: 'stop_kinyinya_pilote',
@@ -720,7 +927,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.1138,
     facilities: ['Shelter', 'Lighting'],
     popularLandmark: 'Kinyinya Pilote Junction & Scenic Gasabo Ridge',
-    connectingLines: ['309', '489'],
+    connectingLines: ['309'],
   },
   {
     id: 'stop_kinyinya_centre',
@@ -732,7 +939,7 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.1092,
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Health Centre Access'],
     popularLandmark: 'Kinyinya Sector Headquarters & Health Centre',
-    connectingLines: ['309', '489', '502'],
+    connectingLines: ['309', '502'],
   },
   {
     id: 'stop_kagugu_centre',
@@ -747,13 +954,37 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['104', '502'],
   },
   {
+    id: 'stop_beltoire',
+    name: 'Beltoire / Kagugu Slope Stop',
+    kinyarwandaName: 'Beltoire',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.915214,
+    lng: 30.068347,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Beltoire Commercial Center & Gisozi-Kagugu Avenue',
+    connectingLines: ['104', '502'],
+  },
+  {
+    id: 'stop_gs_kagarama',
+    name: 'GS Kagarama / Kagugu North Stop',
+    kinyarwandaName: 'GS Kagarama',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.897769,
+    lng: 30.07665,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Groupe Scolaire Kagarama & Kagugu Heights',
+    connectingLines: ['502'],
+  },
+  {
     id: 'stop_bumbogo',
-    name: 'Bumbogo / Azam Stop',
+    name: 'Bumbogo / Azam Grain Mill Stop',
     kinyarwandaName: 'Bumbogo kuri Azam',
     zone: 'Zone 2 (Gasabo)',
     district: 'Gasabo',
-    lat: -1.9350,
-    lng: 30.1550,
+    lat: -1.932474,
+    lng: 30.145894,
     facilities: ['Shelter', 'Lighting'],
     popularLandmark: 'Azam Rwanda Grain Mill & Bumbogo Hills',
     connectingLines: ['205'],
@@ -770,10 +1001,34 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     popularLandmark: 'Intare Conference Arena & Kabuga Gateway',
     connectingLines: ['205'],
   },
+  {
+    id: 'stop_jabana',
+    name: 'Jabana Power Station Stop',
+    kinyarwandaName: 'Jabana',
+    zone: 'Zone 2 (Gasabo North)',
+    district: 'Gasabo',
+    lat: -1.8680,
+    lng: 30.0480,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Jabana Thermal Power Plant & Industrial Suburb',
+    connectingLines: ['104'],
+  },
+  {
+    id: 'stop_nyacyonga',
+    name: 'Nyacyonga Gateway Stop',
+    kinyarwandaName: 'Nyacyonga',
+    zone: 'Zone 4 (Outer North)',
+    district: 'Gasabo',
+    lat: -1.8850,
+    lng: 30.0580,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Northern Highway Gateway to Musanze & Gatuna',
+    connectingLines: ['104'],
+  },
 
-  // ==========================================
-  // CRUCIAL INTERMEDIATE BUS STOPS (ZONE 3: KICUKIRO)
-  // ==========================================
+  // =========================================================================
+  // KICUKIRO DISTRICT INTERMEDIATE BUS STOPS (ZONE 3)
+  // =========================================================================
   {
     id: 'stop_sopetrad',
     name: 'Sopetrad / Payage Approach',
@@ -799,6 +1054,18 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['101', '301', '308'],
   },
   {
+    id: 'stop_cafe_rwampara',
+    name: 'Cafe Rwampara / Kanogo Slope',
+    kinyarwandaName: 'Cafe Rwampara',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.967667,
+    lng: 30.074432,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Rwampara Commercial Valley & Kicukiro Slope',
+    connectingLines: ['308'],
+  },
+  {
     id: 'stop_rwandex',
     name: 'Rwandex / Magerwa Stop',
     kinyarwandaName: 'Rwandex',
@@ -820,7 +1087,31 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.0910,
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Bus Priority Slipway'],
     popularLandmark: 'Major intersection connecting CBD, Airport & Bugesera',
-    connectingLines: ['101', '301', '308', '205'],
+    connectingLines: ['101', '205', '301', '308'],
+  },
+  {
+    id: 'stop_akagera_motors',
+    name: 'Akagera Motors / Sonatubes Approach',
+    kinyarwandaName: 'Akagera Motors',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.968039,
+    lng: 30.094239,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Akagera Motors Headquarters & Sonatubes Avenue',
+    connectingLines: ['301', '308'],
+  },
+  {
+    id: 'stop_beausejour',
+    name: 'Beauséjour / Sonatubes East',
+    kinyarwandaName: 'Beauséjour',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.958147,
+    lng: 30.104977,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Hôtel Beauséjour & KK 15 Rd',
+    connectingLines: ['301'],
   },
   {
     id: 'stop_gikondo',
@@ -828,8 +1119,8 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     kinyarwandaName: 'Gikondo Merez',
     zone: 'Zone 3 (Kicukiro)',
     district: 'Kicukiro',
-    lat: -1.9740,
-    lng: 30.0820,
+    lat: -1.975843,
+    lng: 30.085961,
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
     popularLandmark: 'Gikondo International Expo Grounds & Industrial Estate',
     connectingLines: ['308'],
@@ -844,195 +1135,18 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     lng: 30.0970,
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'University Access'],
     popularLandmark: 'IPRC Kigali Technical University & Saint Joseph',
-    connectingLines: ['301', '308'],
+    connectingLines: ['301', '308', '401'],
   },
-  {
-    id: 'stop_kabeza_market',
-    name: 'Kabeza Market Stop',
-    kinyarwandaName: 'Kabeza ku Isoko',
-    zone: 'Zone 3 (Kicukiro)',
-    district: 'Kicukiro',
-    lat: -1.9690,
-    lng: 30.1220,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
-    popularLandmark: 'Kabeza Market & Commercial Street',
-    connectingLines: ['301'],
-  },
-  {
-    id: 'stop_rubirizi',
-    name: 'Rubirizi Stop',
-    kinyarwandaName: 'Rubirizi',
-    zone: 'Zone 3 (Kicukiro)',
-    district: 'Kicukiro',
-    lat: -1.9760,
-    lng: 30.1310,
-    facilities: ['Shelter', 'Lighting'],
-    popularLandmark: 'Rubirizi Catholic Parish & Agricultural Research Institute',
-    connectingLines: ['301'],
-  },
-  {
-    id: 'stop_busanza',
-    name: 'Busanza Housing Estate Stop',
-    kinyarwandaName: 'Busanza mu Mudugudu',
-    zone: 'Zone 3 (Kicukiro)',
-    district: 'Kicukiro',
-    lat: -1.9890,
-    lng: 30.1380,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
-    popularLandmark: 'Busanza Green Housing Estate & Community Center',
-    connectingLines: ['301'],
-  },
-  {
-    id: 'stop_gahanga_sector',
-    name: 'Gahanga Sector Office Stop',
-    kinyarwandaName: 'Gahanga ku Murenge',
-    zone: 'Zone 4 (Kicukiro South)',
-    district: 'Kicukiro',
-    lat: -2.0180,
-    lng: 30.1040,
-    facilities: ['Shelter', 'Lighting'],
-    popularLandmark: 'Gahanga Sector Administrative Offices',
-    connectingLines: ['301'],
-  },
-  {
-    id: 'stop_nyacyonga',
-    name: 'Nyacyonga Gateway Stop',
-    kinyarwandaName: 'Nyacyonga',
-    zone: 'Zone 4 (Outer North)',
-    district: 'Gasabo',
-    lat: -1.8850,
-    lng: 30.0580,
-    facilities: ['Shelter', 'Lighting'],
-    popularLandmark: 'Northern Highway Gateway to Musanze & Gatuna',
-    connectingLines: ['104'],
-  },
-
-  // ==========================================
-  // ADDITIONAL ACCURATELY MAPPED KIGALI STOPS
-  // ==========================================
-  // NYARUGENGE DISTRICT
-  {
-    id: 'stop_ruyenzi_gateway',
-    name: 'Ruyenzi / Kamonyi Gateway Terminal',
-    kinyarwandaName: 'Gare ya Ruyenzi / Kamonyi',
-    zone: 'Zone 1 (Outer West)',
-    district: 'Outer Kigali',
-    lat: -1.9425,
-    lng: 30.0020,
-    isBusPark: true,
-    parkType: 'regional_terminal',
-    bayCapacity: 25,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Restrooms', 'Southern Province Intercity Link'],
-    popularLandmark: 'Ruyenzi Center & Nyabarongo Western Bridge Gateway',
-    connectingLines: ['101', '102'],
-    dailyPassengerVolume: '22,000+ commuters/day',
-  },
-  {
-    id: 'stop_kigali_city_market',
-    name: 'Kigali City Market / Nyarugenge Market',
-    kinyarwandaName: 'Isoko rya Nyarugenge',
-    zone: 'Zone 1 (Nyarugenge)',
-    district: 'Nyarugenge',
-    lat: -1.9468,
-    lng: 30.0588,
-    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent', 'Market Direct Entrance'],
-    popularLandmark: 'Kigali City Market Plaza & Commercial Hub',
-    connectingLines: ['101', '102', '104'],
-  },
-  {
-    id: 'stop_rebero',
-    name: 'Mount Rebero / Cultural Park Stop',
-    kinyarwandaName: 'Ku Murenge wa Rebero',
-    zone: 'Zone 1 (Nyarugenge)',
-    district: 'Nyarugenge',
-    lat: -1.9820,
-    lng: 30.0680,
-    facilities: ['Shelter', 'Lighting', 'Scenic Viewpoint Platform'],
-    popularLandmark: 'Mount Rebero, Canal Olympia & Cultural Village',
-    connectingLines: ['102', '308'],
-  },
-  {
-    id: 'stop_kanyinya',
-    name: 'Kanyinya / Karuruma Stop',
-    kinyarwandaName: 'Kanyinya Karuruma',
-    zone: 'Zone 1 (Nyarugenge North)',
-    district: 'Nyarugenge',
-    lat: -1.9050,
-    lng: 30.0410,
-    facilities: ['Shelter', 'Lighting'],
-    popularLandmark: 'Kanyinya Sector Office & Northern Valley Highway',
-    connectingLines: ['104'],
-  },
-
-  // GASABO DISTRICT
-  {
-    id: 'stop_ndera_hub',
-    name: 'Ndera Neuro-Psychiatric Hub Stop',
-    kinyarwandaName: 'Gare ya Ndera / Ibitaro',
-    zone: 'Zone 2 (Gasabo East)',
-    district: 'Gasabo',
-    lat: -1.9480,
-    lng: 30.1780,
-    isBusPark: true,
-    parkType: 'feeder_park',
-    bayCapacity: 18,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Hospital Access Ramp'],
-    popularLandmark: 'Ndera Specialized Hospital & Ndera Technical College',
-    connectingLines: ['205', '309'],
-    dailyPassengerVolume: '14,000+ commuters/day',
-  },
-  {
-    id: 'stop_gishushu',
-    name: 'Gishushu / RDB Junction Stop',
-    kinyarwandaName: 'Gishushu kuri RDB',
-    zone: 'Zone 2 (Gasabo)',
-    district: 'Gasabo',
-    lat: -1.9530,
-    lng: 30.1030,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Pedestrian Flyover Bridge'],
-    popularLandmark: 'Rwanda Development Board (RDB) & Ministry of Justice',
-    connectingLines: ['101', '205', '502'],
-  },
-  {
-    id: 'stop_jabana',
-    name: 'Jabana Power Station Stop',
-    kinyarwandaName: 'Jabana',
-    zone: 'Zone 2 (Gasabo North)',
-    district: 'Gasabo',
-    lat: -1.8680,
-    lng: 30.0480,
-    facilities: ['Shelter', 'Lighting'],
-    popularLandmark: 'Jabana Thermal Power Plant & Industrial Suburb',
-    connectingLines: ['104'],
-  },
-  {
-    id: 'stop_kacyiru_bus_park',
-    name: 'Kacyiru Bus Terminal',
-    kinyarwandaName: 'Gare ya Kacyiru',
-    zone: 'Zone 2 (Gasabo / Kacyiru)',
-    district: 'Gasabo',
-    lat: -1.9325,
-    lng: 30.0835,
-    isBusPark: true,
-    parkType: 'feeder_park',
-    bayCapacity: 20,
-    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting', 'Government Offices Connection'],
-    popularLandmark: 'Kacyiru Sector Office, National Library & US Embassy Corridor',
-    connectingLines: ['104', '205'],
-    dailyPassengerVolume: '24,000+ commuters/day',
-  },
-
-  // KICUKIRO DISTRICT
   {
     id: 'stop_gatenga',
-    name: 'Gatenga Commercial Stop',
-    kinyarwandaName: 'Gatenga ku Isoko',
+    name: 'Gatenga Commercial Market Stop',
+    kinyarwandaName: 'Gatenga ku Isoko / ku Murenge',
     zone: 'Zone 3 (Kicukiro)',
     district: 'Kicukiro',
-    lat: -1.9800,
-    lng: 30.0890,
+    lat: -1.977414,
+    lng: 30.095424,
     facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
-    popularLandmark: 'Gatenga Youth Center & Salesian Institute',
+    popularLandmark: 'Gatenga Sector Offices, Youth Center & Salesian Institute',
     connectingLines: ['308', '401'],
   },
   {
@@ -1048,6 +1162,42 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['301', '310'],
   },
   {
+    id: 'stop_kabeza_market',
+    name: 'Kabeza Market Stop',
+    kinyarwandaName: 'Kabeza ku Isoko',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.9690,
+    lng: 30.1220,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
+    popularLandmark: 'Kabeza Market & Commercial Street',
+    connectingLines: ['310'],
+  },
+  {
+    id: 'stop_rubirizi',
+    name: 'Rubirizi / ADPR Stop',
+    kinyarwandaName: 'Rubirizi ADPR',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.97163,
+    lng: 30.132555,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Rubirizi Catholic Parish & Agricultural Research Institute',
+    connectingLines: ['310'],
+  },
+  {
+    id: 'stop_busanza',
+    name: 'Busanza Housing Estate Stop',
+    kinyarwandaName: 'Busanza mu Mudugudu',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.99912,
+    lng: 30.145607,
+    facilities: ['Shelter', 'Tap&Go Agent', 'Lighting'],
+    popularLandmark: 'Busanza Green Housing Estate & Community Center',
+    connectingLines: ['310'],
+  },
+  {
     id: 'stop_samuduha',
     name: 'Samuduha Junction Stop',
     kinyarwandaName: 'Samuduha',
@@ -1060,6 +1210,46 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     connectingLines: ['310'],
   },
   {
+    id: 'stop_alpha_kanombe',
+    name: 'Alpha / Kanombe Airport East',
+    kinyarwandaName: 'Alpha / Kumarembo',
+    zone: 'Zone 3 (Kicukiro East)',
+    district: 'Kicukiro',
+    lat: -1.961881,
+    lng: 30.134863,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Alpha Center & Kigali Airport East Perimeter',
+    connectingLines: ['301', '310'],
+  },
+  {
+    id: 'stop_adev_tvet',
+    name: 'ADEV TVET School / Gahanga Stop',
+    kinyarwandaName: 'ADEV TVET',
+    zone: 'Zone 4 (Kicukiro South)',
+    district: 'Kicukiro',
+    lat: -2.012234,
+    lng: 30.107501,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'ADEV TVET Vocational School & Gahanga Road',
+    connectingLines: ['301', '401'],
+  },
+  {
+    id: 'stop_gahanga_sector',
+    name: 'Gahanga Sector Office Stop',
+    kinyarwandaName: 'Gahanga ku Murenge',
+    zone: 'Zone 4 (Kicukiro South)',
+    district: 'Kicukiro',
+    lat: -2.0180,
+    lng: 30.1040,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Gahanga Sector Administrative Offices',
+    connectingLines: ['301', '401'],
+  },
+
+  // =========================================================================
+  // OUTER KIGALI & REGIONAL HIGHWAY STOPS (ZONE 4)
+  // =========================================================================
+  {
     id: 'stop_mulindi',
     name: 'Mulindi Market Stop',
     kinyarwandaName: 'Mulindi ku Isoko',
@@ -1071,6 +1261,30 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     popularLandmark: 'Mulindi Commercial Market & Eastern Highway Bypass',
     connectingLines: ['205'],
   },
+  {
+    id: 'stop_fpr_kabuga',
+    name: 'FPR / Kabuga Highway Stop',
+    kinyarwandaName: 'FPR Kabuga',
+    zone: 'Zone 4 (Outer East)',
+    district: 'Outer Kigali',
+    lat: -1.983855,
+    lng: 30.204142,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'FPR Complex & Eastern Province Entry Corridor',
+    connectingLines: ['205'],
+  },
+  {
+    id: 'stop_bambino',
+    name: 'Bambino / Rusororo Gate Stop',
+    kinyarwandaName: 'Bambino Super Park',
+    zone: 'Zone 4 (Outer East)',
+    district: 'Outer Kigali',
+    lat: -1.982288,
+    lng: 30.211552,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Bambino Super Park & Rusororo Highway Interchange',
+    connectingLines: ['205'],
+  },
 ];
 
 export const KIGALI_ROUTES: TransitRoute[] = [
@@ -1079,49 +1293,47 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '101',
     name: 'Downtown ⇄ Nyabugogo ⇄ Remera ⇄ Kimironko (EcoFleet Priority Trunk)',
     operator: 'EcoFleet',
-    color: '#10B981', // Emerald
+    color: '#10B981',
     originId: 'stop_downtown',
     destinationId: 'stop_kimironko',
     originName: 'Downtown CBD',
     destinationName: 'Kimironko Park',
     stopIds: [
       'stop_downtown',
+      'stop_city_plaza',
       'stop_chuk',
+      'stop_gereza_1930',
+      'stop_poids_lourds',
       'stop_nyabugogo',
       'stop_kinamba',
       'stop_kbc_heights',
       'stop_kcc',
+      'stop_gishushu',
+      'stop_chez_lando',
+      'stop_bk_arena',
       'stop_remera_giporoso',
+      'stop_control_technique',
+      'stop_kimironko_market',
       'stop_kimironko',
     ],
     waypoints: [
-      // Downtown CBD Terminal
       [-1.9441, 30.0619],
-      [-1.9458, 30.0608],
-      [-1.9482, 30.0594], // CHUK Hospital
-      [-1.9472, 30.0556], // Muhima Descent (KN 1 Rd)
-      [-1.9450, 30.0512],
-      [-1.9422, 30.0478],
-      [-1.9392, 30.0446], // Nyabugogo Terminal
-      [-1.9378, 30.0482], // Nyabugogo Bridge
-      [-1.9366, 30.0535], // Poids Lourds
-      [-1.9358, 30.0580],
-      [-1.9360, 30.0610], // Kinamba Junction
-      [-1.9352, 30.0670], // Boulevard de l'Umuganda
-      [-1.9370, 30.0735],
-      [-1.9420, 30.0780], // National Police HQ
-      [-1.9470, 30.0860],
-      [-1.9515, 30.0965], // KBC & Kigali Heights Roundabout
-      [-1.9535, 30.0950], // KCC Roundabout
-      [-1.9540, 30.0980], // KG 1 Ave Chez Lando
-      [-1.9555, 30.1040],
-      [-1.9572, 30.1095],
-      [-1.9587, 30.1141], // Remera Giporoso Roundabout
-      [-1.9570, 30.1180], // KG 11 Ave
-      [-1.9555, 30.1210],
-      [-1.9543, 30.1259], // Kimironko Market & Prison Junction
-      [-1.9520, 30.1258],
-      [-1.949688, 30.125647], // Gare ya Kimironko
+      [-1.9447, 30.058483],
+      [-1.955928, 30.060997],
+      [-1.94514, 30.054696],
+      [-1.9405, 30.0490],
+      [-1.9392, 30.0446],
+      [-1.9360, 30.0610],
+      [-1.9333, 30.0880],
+      [-1.9515, 30.0965],
+      [-1.9540, 30.0930],
+      [-1.95303, 30.101407],
+      [-1.959684, 30.108217],
+      [-1.9530, 30.1110],
+      [-1.9587, 30.1141],
+      [-1.951565, 30.11563],
+      [-1.9543, 30.1259],
+      [-1.949688, 30.125647],
     ],
     standardFareRwf: 350,
     averageFrequencyMin: 4,
@@ -1133,23 +1345,34 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '102',
     name: 'Downtown (CBD) ⇄ Nyamirambo (Cosmos)',
     operator: 'Royal Express',
-    color: '#DC2626', // Red
+    color: '#DC2626',
     originId: 'stop_downtown',
     destinationId: 'stop_nyamirambo',
     originName: 'Downtown CBD',
     destinationName: 'Nyamirambo Cosmos',
-    stopIds: ['stop_downtown', 'stop_chuk', 'stop_nyamirambo'],
+    stopIds: [
+      'stop_downtown',
+      'stop_kigali_city_market',
+      'stop_chuk',
+      'stop_epa_school',
+      'stop_camp_kigali',
+      'stop_biryogo',
+      'stop_saint_andre',
+      'stop_cafe_nyakabanda',
+      'stop_cosmos_roundabout',
+      'stop_nyamirambo',
+    ],
     waypoints: [
-      [-1.9441, 30.0619], // Downtown
-      [-1.9465, 30.0602],
-      [-1.9482, 30.0594], // CHUK Hospital
-      [-1.9520, 30.0585], // Biryogo Green Mosque
-      [-1.9560, 30.0570], // Biryogo Car-Free Zone Entrance
-      [-1.9605, 30.0545], // KN 2 Ave Matimba
-      [-1.9650, 30.0520], // Rwezamenyo
-      [-1.9688, 30.0505],
-      [-1.9720, 30.0490], // Cosmos
-      [-1.9750, 30.0460], // Nyamirambo Stadium / Terminal
+      [-1.9441, 30.0619],
+      [-1.9468, 30.0588],
+      [-1.955928, 30.060997],
+      [-1.955606, 30.058178],
+      [-1.958014, 30.060737],
+      [-1.9680, 30.0520],
+      [-1.9610, 30.0430],
+      [-1.970611, 30.048262],
+      [-1.974672, 30.053853],
+      [-1.9750, 30.0460],
     ],
     standardFareRwf: 250,
     averageFrequencyMin: 4,
@@ -1161,26 +1384,34 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '104',
     name: 'Downtown ⇄ Kacyiru ⇄ Gisozi ⇄ Batsinda',
     operator: 'RFTC',
-    color: '#059669', // Green
+    color: '#059669',
     originId: 'stop_downtown',
     destinationId: 'stop_batsinda',
     originName: 'Downtown CBD',
     destinationName: 'Batsinda Terminal',
-    stopIds: ['stop_downtown', 'stop_kinamba', 'stop_kacyiru_govt', 'stop_gisozi', 'stop_batsinda'],
+    stopIds: [
+      'stop_downtown',
+      'stop_gereza_1930',
+      'stop_kinamba',
+      'stop_gakinjiro',
+      'stop_kacyiru_bus_park',
+      'stop_kacyiru_govt',
+      'stop_gisozi',
+      'stop_beltoire',
+      'stop_kagugu_centre',
+      'stop_batsinda',
+    ],
     waypoints: [
-      [-1.9441, 30.0619], // Downtown
-      [-1.9405, 30.0590],
-      [-1.9360, 30.0610], // Kinamba Junction
-      [-1.9340, 30.0710], // KG 7 Ave
-      [-1.9333, 30.0880], // Kacyiru Ministries & Executive Park
-      [-1.9300, 30.0820], // KG 5 Ave down to Gisozi
-      [-1.9250, 30.0760], // Gisozi ULK University
-      [-1.9210, 30.0710],
-      [-1.9180, 30.0650], // Gisozi Centre
-      [-1.9145, 30.0665],
-      [-1.9120, 30.0680], // Batsinda Hill Road
-      [-1.9080, 30.0692],
-      [-1.9050, 30.0700], // Batsinda Terminal
+      [-1.9441, 30.0619],
+      [-1.94514, 30.054696],
+      [-1.9360, 30.0610],
+      [-1.926035, 30.07062],
+      [-1.9325, 30.0835],
+      [-1.9333, 30.0880],
+      [-1.9180, 30.0650],
+      [-1.915214, 30.068347],
+      [-1.9120, 30.0780],
+      [-1.905434, 30.079796],
     ],
     standardFareRwf: 380,
     averageFrequencyMin: 7,
@@ -1192,32 +1423,36 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '205',
     name: 'Nyabugogo ⇄ Kacyiru ⇄ Kimironko ⇄ Kabuga (EcoFleet Express)',
     operator: 'EcoFleet',
-    color: '#7C3AED', // Purple
+    color: '#7C3AED',
     originId: 'stop_nyabugogo',
     destinationId: 'stop_kabuga',
     originName: 'Nyabugogo Terminal',
     destinationName: 'Kabuga Express',
-    stopIds: ['stop_nyabugogo', 'stop_kinamba', 'stop_kacyiru_govt', 'stop_nyarutarama', 'stop_kimironko', 'stop_kabuga'],
+    stopIds: [
+      'stop_nyabugogo',
+      'stop_kinamba',
+      'stop_kacyiru_govt',
+      'stop_nyarutarama',
+      'stop_kimironko',
+      'stop_bumbogo',
+      'stop_ndera_hub',
+      'stop_mulindi',
+      'stop_fpr_kabuga',
+      'stop_bambino',
+      'stop_kabuga',
+    ],
     waypoints: [
-      [-1.9392, 30.0446], // Nyabugogo Terminal
-      [-1.9372, 30.0515],
-      [-1.9360, 30.0610], // Kinamba Junction
-      [-1.9345, 30.0740],
-      [-1.9333, 30.0880], // Kacyiru
-      [-1.9350, 30.0940], // KG 9 Ave Nyarutarama Road
-      [-1.9380, 30.1000], // Nyarutarama Golf/Lake
-      [-1.9420, 30.1080],
-      [-1.9460, 30.1150], // Kibagabaga Junction
-      [-1.9510, 30.1210],
-      [-1.949688, 30.125647], // Gare ya Kimironko
-      [-1.9543, 30.1259], // Kimironko Market
-      [-1.9587, 30.1141], // Remera Giporoso
-      [-1.9620, 30.1280], // RN3 Highway to Kabuga
-      [-1.9680, 30.1450], // Kanombe Military Junction
-      [-1.9740, 30.1650], // Mulindi Market
-      [-1.9820, 30.1900], // Masaka Hospital Junction
-      [-1.9890, 30.2050],
-      [-1.9950, 30.2200], // Kabuga Terminal
+      [-1.9392, 30.0446],
+      [-1.9360, 30.0610],
+      [-1.9333, 30.0880],
+      [-1.9380, 30.1000],
+      [-1.949688, 30.125647],
+      [-1.932474, 30.145894],
+      [-1.9480, 30.1780],
+      [-1.9740, 30.1650],
+      [-1.983855, 30.204142],
+      [-1.982288, 30.211552],
+      [-1.9950, 30.2200],
     ],
     standardFareRwf: 550,
     averageFrequencyMin: 10,
@@ -1229,27 +1464,36 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '301',
     name: 'Downtown ⇄ Sonatubes ⇄ Kanombe / Kigali Airport (EcoFleet Airport Express)',
     operator: 'EcoFleet',
-    color: '#F59E0B', // Amber
+    color: '#F59E0B',
     originId: 'stop_downtown',
     destinationId: 'stop_kanombe_airport',
     originName: 'Downtown CBD',
     destinationName: 'Kanombe Airport (KGL)',
-    stopIds: ['stop_downtown', 'stop_chuk', 'stop_sonatubes', 'stop_remera_giporoso', 'stop_kanombe_airport'],
+    stopIds: [
+      'stop_downtown',
+      'stop_chuk',
+      'stop_sopetrad',
+      'stop_kanogo',
+      'stop_rwandex',
+      'stop_sonatubes',
+      'stop_akagera_motors',
+      'stop_beausejour',
+      'stop_remera_giporoso',
+      'stop_alpha_kanombe',
+      'stop_kanombe_airport',
+    ],
     waypoints: [
-      [-1.9441, 30.0619], // Downtown CBD
-      [-1.9482, 30.0594], // CHUK
-      [-1.9520, 30.0670], // KN 3 Ave
-      [-1.9565, 30.0750], // Rwandex Junction
-      [-1.9610, 30.0825],
-      [-1.9660, 30.0910], // Sonatubes Roundabout
-      [-1.9640, 30.0965], // KK 15 Rd
-      [-1.9620, 30.1020], // Prince House
-      [-1.9600, 30.1080],
-      [-1.9587, 30.1141], // Remera Giporoso Roundabout
-      [-1.9605, 30.1210], // Airport Blvd (KK 15 Rd)
-      [-1.9630, 30.1280], // Military Hospital
-      [-1.9655, 30.1340],
-      [-1.9686, 30.1395], // Kigali International Airport Terminal
+      [-1.9441, 30.0619],
+      [-1.955928, 30.060997],
+      [-1.9520, 30.0680],
+      [-1.9565, 30.0750],
+      [-1.9620, 30.0840],
+      [-1.9660, 30.0910],
+      [-1.968039, 30.094239],
+      [-1.958147, 30.104977],
+      [-1.9587, 30.1141],
+      [-1.961881, 30.134863],
+      [-1.9686, 30.1395],
     ],
     standardFareRwf: 450,
     averageFrequencyMin: 6,
@@ -1261,25 +1505,32 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '308',
     name: 'Remera (Giporoso) ⇄ Sonatubes ⇄ Gikondo ⇄ Nyabugogo',
     operator: 'Royal Express',
-    color: '#0284C7', // Sky Blue
+    color: '#0284C7',
     originId: 'stop_remera_giporoso',
     destinationId: 'stop_nyabugogo',
     originName: 'Remera Giporoso',
     destinationName: 'Nyabugogo Terminal',
-    stopIds: ['stop_remera_giporoso', 'stop_sonatubes', 'stop_gikondo', 'stop_chuk', 'stop_nyabugogo'],
+    stopIds: [
+      'stop_remera_giporoso',
+      'stop_akagera_motors',
+      'stop_sonatubes',
+      'stop_gikondo',
+      'stop_gatenga',
+      'stop_cafe_rwampara',
+      'stop_rwandex',
+      'stop_chuk',
+      'stop_nyabugogo',
+    ],
     waypoints: [
-      [-1.9587, 30.1141], // Remera Giporoso
-      [-1.9600, 30.1080],
-      [-1.9620, 30.1020], // Prince House
-      [-1.9660, 30.0910], // Sonatubes Roundabout
-      [-1.9700, 30.0865], // KK 31 Ave Gikondo
-      [-1.9740, 30.0820], // Gikondo Industrial
-      [-1.9710, 30.0750], // Gikondo Merez
-      [-1.9650, 30.0690], // Rwandex (KK 3 Rd)
-      [-1.9560, 30.0570], // Muhima slope
-      [-1.9482, 30.0594], // CHUK
-      [-1.9450, 30.0512],
-      [-1.9392, 30.0446], // Nyabugogo
+      [-1.9587, 30.1141],
+      [-1.968039, 30.094239],
+      [-1.9660, 30.0910],
+      [-1.975843, 30.085961],
+      [-1.977414, 30.095424],
+      [-1.967667, 30.074432],
+      [-1.9620, 30.0840],
+      [-1.955928, 30.060997],
+      [-1.9392, 30.0446],
     ],
     standardFareRwf: 320,
     averageFrequencyMin: 8,
@@ -1291,7 +1542,7 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '309',
     name: 'Kimironko ⇄ Kibagabaga ⇄ Kinyinya (EcoFleet Line 309 / 489)',
     operator: 'EcoFleet',
-    color: '#10B981', // Emerald
+    color: '#10B981',
     originId: 'stop_kimironko',
     destinationId: 'stop_kinyinya_park',
     originName: 'Gare ya Kimironko',
@@ -1299,6 +1550,7 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     stopIds: [
       'stop_kimironko',
       'stop_kimironko_market',
+      'stop_four_square',
       'stop_kibagabaga',
       'stop_kibagabaga_church',
       'stop_kinyinya_pilote',
@@ -1306,19 +1558,14 @@ export const KIGALI_ROUTES: TransitRoute[] = [
       'stop_kinyinya_park',
     ],
     waypoints: [
-      [-1.949688, 30.125647], // Gare ya Kimironko (Kimironko Bus Park)
-      [-1.952000, 30.125800], // KG 11 Ave
-      [-1.954300, 30.125900], // Kimironko Market & Prison Junction
-      [-1.951500, 30.123500], // KG 13 Ave towards Kibagabaga
-      [-1.947200, 30.122800], // Kibagabaga Entrance
-      [-1.943000, 30.121500], // KG 9 Ave
-      [-1.939500, 30.120000], // Kibagabaga Hospital
-      [-1.935500, 30.118000], // Kibagabaga Catholic Church & KG 21 Ave
-      [-1.931200, 30.116200], // KG 21 Ave Gasabo Ridge
-      [-1.926500, 30.113800], // Kinyinya kwa Pilote Junction
-      [-1.921800, 30.110800], // Kinyinya Health Centre
-      [-1.918500, 30.109200], // Kinyinya Sector Office & Market
-      [-1.916145, 30.108023], // Gare ya Kinyinya (Kinyinya Bus Park)
+      [-1.949688, 30.125647],
+      [-1.9543, 30.1259],
+      [-1.945092, 30.128922],
+      [-1.9395, 30.1200],
+      [-1.9355, 30.1180],
+      [-1.9265, 30.1138],
+      [-1.9185, 30.1092],
+      [-1.916145, 30.108023],
     ],
     standardFareRwf: 300,
     averageFrequencyMin: 5,
@@ -1330,23 +1577,30 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '310',
     name: 'Downtown ⇄ Sonatubes ⇄ Kabeza ⇄ Busanza ⇄ Kanombe',
     operator: 'Royal Express',
-    color: '#0EA5E9', // Sky
+    color: '#0EA5E9',
     originId: 'stop_downtown',
     destinationId: 'stop_kanombe_airport',
     originName: 'Downtown CBD',
     destinationName: 'Kanombe Hub',
-    stopIds: ['stop_downtown', 'stop_sonatubes', 'stop_kabeza_market', 'stop_busanza', 'stop_kanombe_airport'],
+    stopIds: [
+      'stop_downtown',
+      'stop_sonatubes',
+      'stop_niboye',
+      'stop_kabeza_market',
+      'stop_samuduha',
+      'stop_rubirizi',
+      'stop_busanza',
+      'stop_kanombe_airport',
+    ],
     waypoints: [
-      [-1.9441, 30.0619], // Downtown
-      [-1.9520, 30.0670],
-      [-1.9565, 30.0750], // Rwandex
-      [-1.9660, 30.0910], // Sonatubes
-      [-1.9675, 30.1050], // KK 3 Rd Kicukiro-Niboye
-      [-1.9690, 30.1220], // Kabeza Market
-      [-1.9780, 30.1300], // KK 18 Ave to Busanza
-      [-1.9890, 30.1380], // Busanza Housing Estate
-      [-1.9810, 30.1410], // Kanombe link
-      [-1.9686, 30.1395], // Kanombe Hub / Airport
+      [-1.9441, 30.0619],
+      [-1.9660, 30.0910],
+      [-1.9710, 30.1080],
+      [-1.9690, 30.1220],
+      [-1.9850, 30.1280],
+      [-1.97163, 30.132555],
+      [-1.99912, 30.145607],
+      [-1.9686, 30.1395],
     ],
     standardFareRwf: 400,
     averageFrequencyMin: 9,
@@ -1358,25 +1612,32 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '401',
     name: 'Nyabugogo ⇄ Downtown ⇄ Sonatubes ⇄ Gahanga Stadium',
     operator: 'EcoFleet',
-    color: '#8B5CF6', // Purple
+    color: '#8B5CF6',
     originId: 'stop_nyabugogo',
     destinationId: 'stop_gahanga',
     originName: 'Nyabugogo Terminal',
     destinationName: 'Gahanga Stadium',
-    stopIds: ['stop_nyabugogo', 'stop_downtown', 'stop_sonatubes', 'stop_kicukiro_centre', 'stop_gahanga'],
+    stopIds: [
+      'stop_nyabugogo',
+      'stop_downtown',
+      'stop_sonatubes',
+      'stop_kicukiro_centre',
+      'stop_iprc_kigali',
+      'stop_gatenga',
+      'stop_adev_tvet',
+      'stop_gahanga_sector',
+      'stop_gahanga',
+    ],
     waypoints: [
-      [-1.9392, 30.0446], // Nyabugogo
-      [-1.9422, 30.0478],
-      [-1.9472, 30.0556],
-      [-1.9441, 30.0619], // Downtown
-      [-1.9565, 30.0750], // Rwandex
-      [-1.9660, 30.0910], // Sonatubes
-      [-1.9720, 30.0970], // KK 15 Rd Kicukiro
-      [-1.9780, 30.1030], // Kicukiro Centre (Gare)
-      [-1.9920, 30.1035], // Bugesera Road (RN15)
-      [-2.0050, 30.1040],
-      [-2.0180, 30.1040], // Gahanga Sector
-      [-2.0250, 30.1080], // Gahanga Cricket Stadium
+      [-1.9392, 30.0446],
+      [-1.9441, 30.0619],
+      [-1.9660, 30.0910],
+      [-1.9780, 30.1030],
+      [-1.9710, 30.0970],
+      [-1.977414, 30.095424],
+      [-2.012234, 30.107501],
+      [-2.0180, 30.1040],
+      [-2.0250, 30.1080],
     ],
     standardFareRwf: 450,
     averageFrequencyMin: 10,
@@ -1388,23 +1649,32 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     code: '502',
     name: 'Kimironko ⇄ Kibagabaga ⇄ Nyarutarama ⇄ Batsinda',
     operator: 'KBS',
-    color: '#D97706', // Orange
+    color: '#D97706',
     originId: 'stop_kimironko',
     destinationId: 'stop_batsinda',
     originName: 'Kimironko Park',
     destinationName: 'Batsinda Terminal',
-    stopIds: ['stop_kimironko', 'stop_kibagabaga', 'stop_nyarutarama', 'stop_gisozi', 'stop_batsinda'],
+    stopIds: [
+      'stop_kimironko',
+      'stop_kimironko_market',
+      'stop_kibagabaga',
+      'stop_nyarutarama',
+      'stop_gishushu',
+      'stop_gisozi',
+      'stop_beltoire',
+      'stop_gs_kagarama',
+      'stop_batsinda',
+    ],
     waypoints: [
-      [-1.949688, 30.125647], // Gare ya Kimironko
-      [-1.9543, 30.1259], // Kimironko Market
-      [-1.9472, 30.1228],
-      [-1.9395, 30.1200], // Kibagabaga Hospital
-      [-1.9380, 30.1000], // Nyarutarama
-      [-1.9300, 30.0850],
-      [-1.9250, 30.0760], // Gisozi ULK
-      [-1.9180, 30.0650], // Gisozi Centre
-      [-1.9120, 30.0680],
-      [-1.9050, 30.0700], // Batsinda Terminal
+      [-1.949688, 30.125647],
+      [-1.9543, 30.1259],
+      [-1.9395, 30.1200],
+      [-1.9380, 30.1000],
+      [-1.95303, 30.101407],
+      [-1.9180, 30.0650],
+      [-1.915214, 30.068347],
+      [-1.897769, 30.07665],
+      [-1.905434, 30.079796],
     ],
     standardFareRwf: 360,
     averageFrequencyMin: 12,
@@ -1717,9 +1987,6 @@ export const INITIAL_BUS_FLEET: BusTelemetry[] = [
     direction: 'outbound',
     isElectric: false,
   },
-  // ==========================================
-  // LINE 309 (KIMIRONKO ⇄ KIBAGABAGA ⇄ KINYINYA) FLEET
-  // ==========================================
   {
     id: 'bus_ecofleet_309_01',
     plateNumber: 'RAD 309 E',
@@ -1805,7 +2072,6 @@ export const INITIAL_BUS_FLEET: BusTelemetry[] = [
     batterySocPercent: 88,
     co2SavedKg: 175,
   },
-  // LINE 310 (DOWNTOWN - KANOMBE)
   {
     id: 'bus_royal_310_01',
     plateNumber: 'RAD 310 E',
@@ -1833,7 +2099,6 @@ export const INITIAL_BUS_FLEET: BusTelemetry[] = [
     direction: 'outbound',
     isElectric: false,
   },
-  // LINE 401 (NYABUGOGO - GAHANGA)
   {
     id: 'bus_ecofleet_401_01',
     plateNumber: 'RAD 401 E',
