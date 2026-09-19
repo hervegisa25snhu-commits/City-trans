@@ -2,7 +2,19 @@ import { useState, useMemo } from 'react';
 import { BusStop, BusTelemetry, StopArrivalPrediction } from '../types';
 import { KIGALI_BUS_STOPS, KIGALI_ROUTES } from '../data/kigaliTransitData';
 import { calculateDistanceKm, formatDistance, formatEta } from '../utils/geoUtils';
-import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2 } from 'lucide-react';
+import {
+  MapPin,
+  Clock,
+  ArrowRight,
+  ShieldCheck,
+  Bus,
+  Sparkles,
+  Navigation,
+  CheckCircle2,
+  Search,
+  Filter,
+  Zap,
+} from 'lucide-react';
 
 interface StopArrivalsPanelProps {
   selectedStop: BusStop | null;
@@ -20,6 +32,29 @@ export default function StopArrivalsPanel({
   onSelectBus,
 }: StopArrivalsPanelProps) {
   const currentStop = selectedStop || KIGALI_BUS_STOPS[0];
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [districtFilter, setDistrictFilter] = useState<'all' | 'Nyarugenge' | 'Gasabo' | 'Kicukiro' | 'Outer Kigali' | 'gares'>('all');
+
+  // Filter bus stops based on search query and district/gare filter
+  const filteredStops = useMemo(() => {
+    return KIGALI_BUS_STOPS.filter((stop) => {
+      // District or Gare filter
+      if (districtFilter === 'gares' && !stop.isBusPark) return false;
+      if (districtFilter !== 'all' && districtFilter !== 'gares' && stop.district !== districtFilter) return false;
+
+      // Text search query
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = stop.name.toLowerCase().includes(q);
+      const matchKiny = stop.kinyarwandaName?.toLowerCase().includes(q);
+      const matchZone = stop.zone.toLowerCase().includes(q);
+      const matchLandmark = stop.popularLandmark?.toLowerCase().includes(q);
+      const matchLines = stop.connectingLines?.some((c) => c.toLowerCase().includes(q));
+
+      return matchName || matchKiny || matchZone || matchLandmark || matchLines;
+    });
+  }, [searchQuery, districtFilter]);
 
   // Calculate upcoming arrivals for the selected stop
   const arrivals: StopArrivalPrediction[] = useMemo(() => {
@@ -66,7 +101,7 @@ export default function StopArrivalsPanel({
 
   return (
     <div className="flex flex-col h-full bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
-      {/* Header: Stop Selector & Info */}
+      {/* Header: Stop Info & Quick Search */}
       <div className="p-4 border-b border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -74,7 +109,19 @@ export default function StopArrivalsPanel({
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">{currentStop.name}</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-base font-bold text-slate-100">{currentStop.name}</h2>
+                {currentStop.isBusPark && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    GARE
+                  </span>
+                )}
+                {currentStop.isEvChargingHub && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-0.5">
+                    <Zap className="w-2.5 h-2.5" /> EV HUB
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400 font-sans">
                 {currentStop.kinyarwandaName} • {currentStop.zone}
               </p>
@@ -89,20 +136,99 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] scrollbar-none">
+          <button
+            onClick={() => setDistrictFilter('all')}
+            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+              districtFilter === 'all'
+                ? 'bg-amber-500 text-slate-950 font-bold'
+                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+            }`}
+          >
+            All Stops ({KIGALI_BUS_STOPS.length})
+          </button>
+          <button
+            onClick={() => setDistrictFilter('gares')}
+            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+              districtFilter === 'gares'
+                ? 'bg-amber-500 text-slate-950 font-bold'
+                : 'bg-slate-950 text-amber-400 hover:text-amber-300 border border-slate-800'
+            }`}
+          >
+            🏛️ Gares / Hubs
+          </button>
+          <button
+            onClick={() => setDistrictFilter('Nyarugenge')}
+            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+              districtFilter === 'Nyarugenge'
+                ? 'bg-amber-500 text-slate-950 font-bold'
+                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+            }`}
+          >
+            Nyarugenge
+          </button>
+          <button
+            onClick={() => setDistrictFilter('Gasabo')}
+            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+              districtFilter === 'Gasabo'
+                ? 'bg-amber-500 text-slate-950 font-bold'
+                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+            }`}
+          >
+            Gasabo
+          </button>
+          <button
+            onClick={() => setDistrictFilter('Kicukiro')}
+            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+              districtFilter === 'Kicukiro'
+                ? 'bg-amber-500 text-slate-950 font-bold'
+                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+            }`}
+          >
+            Kicukiro
+          </button>
+          <button
+            onClick={() => setDistrictFilter('Outer Kigali')}
+            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition ${
+              districtFilter === 'Outer Kigali'
+                ? 'bg-amber-500 text-slate-950 font-bold'
+                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+            }`}
+          >
+            Outer Suburbs
+          </button>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search stop name, Kinyarwanda, landmark, line..."
+            className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+          />
+        </div>
+
         {/* Stop Selector Dropdown */}
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+          <div className="flex items-center justify-between text-[11px] text-slate-400">
+            <span>Select Bus Stop / Terminal:</span>
+            <span className="font-mono text-amber-400">{filteredStops.length} stops available</span>
+          </div>
           <select
             value={currentStop.id}
             onChange={(e) => {
               const found = KIGALI_BUS_STOPS.find((s) => s.id === e.target.value);
               if (found) onSelectStop(found);
             }}
-            className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+            className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition font-mono"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
+            {filteredStops.map((stop) => (
               <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
+                {stop.isBusPark ? '🏛️ ' : '📍 '}{stop.name} ({stop.zone})
               </option>
             ))}
           </select>
