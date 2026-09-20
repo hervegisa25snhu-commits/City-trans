@@ -1071,6 +1071,152 @@ export const KIGALI_BUS_STOPS: BusStop[] = [
     popularLandmark: 'Mulindi Commercial Market & Eastern Highway Bypass',
     connectingLines: ['205'],
   },
+
+  // NEW ACCURATELY MAPPED BUS STOPS & EXPANDED STATIONS
+  {
+    id: 'stop_muhima_hospital',
+    name: 'Muhima Hospital & Maternity Stop',
+    kinyarwandaName: 'Ibitaro bya Muhima',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.9428,
+    lng: 30.0562,
+    facilities: ['Shelter', 'Lighting', 'Hospital Access Ramp', 'Tap&Go Validator'],
+    popularLandmark: 'Muhima District Hospital & KN 1 Rd Corridor',
+    connectingLines: ['101', '104'],
+  },
+  {
+    id: 'stop_gitega',
+    name: 'Gitega / Sector Office Stop',
+    kinyarwandaName: 'Gitega ku Murenge',
+    zone: 'Zone 1 (Nyarugenge)',
+    district: 'Nyarugenge',
+    lat: -1.9540,
+    lng: 30.0510,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Gitega Commercial Centre & Maison des Jeunes',
+    connectingLines: ['102'],
+  },
+  {
+    id: 'stop_kazi_ni_kazi',
+    name: 'Gikondo Kazi ni Kazi Stop',
+    kinyarwandaName: 'Gikondo Kazi ni Kazi',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.9685,
+    lng: 30.0780,
+    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent'],
+    popularLandmark: 'Kazi ni Kazi Artisanal Market & Gikondo Valley',
+    connectingLines: ['308'],
+  },
+  {
+    id: 'stop_kicukiro_sonatube_bypass',
+    name: 'Nyanza / Sonatube Express Interchange',
+    kinyarwandaName: 'Sonatube Express',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.9680,
+    lng: 30.0950,
+    facilities: ['Shelter', 'Lighting', 'Dedicated Bus priority slipway'],
+    popularLandmark: 'Sonatube - Nyanza Dedicated Bus Lane Gate',
+    connectingLines: ['301', '308', '401'],
+  },
+  {
+    id: 'stop_kigali_independent_univ',
+    name: 'ULK Gisozi Campus Main Entrance',
+    kinyarwandaName: 'Kaminuza ya ULK Gisozi',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.9215,
+    lng: 30.0635,
+    facilities: ['Shelter', 'Lighting', 'Student Lounge', 'Tap&Go Agent'],
+    popularLandmark: 'ULK Campus Gate & Gisozi Commercial Center',
+    connectingLines: ['104', '502'],
+  },
+  {
+    id: 'stop_genocide_memorial',
+    name: 'Kigali Genocide Memorial Stop',
+    kinyarwandaName: 'Urwibutso rwa Jenoside rwa Kigali',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.9305,
+    lng: 30.0602,
+    facilities: ['Shelter', 'Lighting', 'Tour Bus Bay', 'Wheelchair Access'],
+    popularLandmark: 'Kigali Genocide Memorial Centre & Amphitheatre',
+    connectingLines: ['104'],
+  },
+  {
+    id: 'stop_fawe_girls_school',
+    name: 'FAWE Girls School / Gisozi Ridge',
+    kinyarwandaName: 'FAWE Girls School',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.9160,
+    lng: 30.0640,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'FAWE Girls School & Gisozi Sector Office',
+    connectingLines: ['104', '502'],
+  },
+  {
+    id: 'stop_nyarutarama_tennis_club',
+    name: 'Nyarutarama Golf & Tennis Club Stop',
+    kinyarwandaName: 'Nyarutarama Tennis Club',
+    zone: 'Zone 2 (Gasabo)',
+    district: 'Gasabo',
+    lat: -1.9425,
+    lng: 30.0980,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Nyarutarama Sports Club & Lake Nyarutarama Boardwalk',
+    connectingLines: ['205', '502'],
+  },
+  {
+    id: 'stop_kanombe_military_hospital',
+    name: 'Rwanda Military Hospital (Kanombe)',
+    kinyarwandaName: 'Ibitaro by\'Ikanombe',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.9640,
+    lng: 30.1340,
+    facilities: ['Shelter', 'Lighting', 'Emergency Access Ramp', 'Tap&Go Agent'],
+    popularLandmark: 'Rwanda Military Hospital Main Gate & KK 15 Rd',
+    connectingLines: ['301', '310'],
+  },
+  {
+    id: 'stop_kanombe_efotu',
+    name: 'EFOTU Kanombe / Technical School',
+    kinyarwandaName: 'EFOTU Kanombe',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.9610,
+    lng: 30.1375,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'EFOTU School & Kanombe Barracks Precinct',
+    connectingLines: ['301'],
+  },
+  {
+    id: 'stop_zindiro_market_gate',
+    name: 'Zindiro Centre & Bumbogo Feeder Stop',
+    kinyarwandaName: 'Zindiro ku Isoko',
+    zone: 'Zone 2 (Gasabo East)',
+    district: 'Gasabo',
+    lat: -1.9450,
+    lng: 30.1380,
+    facilities: ['Shelter', 'Lighting', 'Tap&Go Agent'],
+    popularLandmark: 'Zindiro Main Commercial Street & Bumbogo Route',
+    connectingLines: ['205', '502'],
+  },
+  {
+    id: 'stop_nyarugunga_health_centre',
+    name: 'Nyarugunga Health Centre Stop',
+    kinyarwandaName: 'Nyarugunga ku Bigo Nderabuzima',
+    zone: 'Zone 3 (Kicukiro)',
+    district: 'Kicukiro',
+    lat: -1.9720,
+    lng: 30.1420,
+    facilities: ['Shelter', 'Lighting'],
+    popularLandmark: 'Nyarugunga Sector Headquarters',
+    connectingLines: ['310'],
+  },
 ];
 
 export const KIGALI_ROUTES: TransitRoute[] = [
@@ -1166,18 +1312,30 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_batsinda',
     originName: 'Downtown CBD',
     destinationName: 'Batsinda Terminal',
-    stopIds: ['stop_downtown', 'stop_kinamba', 'stop_kacyiru_govt', 'stop_gisozi', 'stop_batsinda'],
+    stopIds: [
+      'stop_downtown',
+      'stop_muhima_hospital',
+      'stop_kinamba',
+      'stop_genocide_memorial',
+      'stop_kacyiru_govt',
+      'stop_kigali_independent_univ',
+      'stop_gisozi',
+      'stop_fawe_girls_school',
+      'stop_batsinda',
+    ],
     waypoints: [
       [-1.9441, 30.0619], // Downtown
+      [-1.9428, 30.0562], // Muhima Hospital
       [-1.9405, 30.0590],
       [-1.9360, 30.0610], // Kinamba Junction
+      [-1.9305, 30.0602], // Genocide Memorial
       [-1.9340, 30.0710], // KG 7 Ave
       [-1.9333, 30.0880], // Kacyiru Ministries & Executive Park
       [-1.9300, 30.0820], // KG 5 Ave down to Gisozi
       [-1.9250, 30.0760], // Gisozi ULK University
-      [-1.9210, 30.0710],
+      [-1.9215, 30.0635], // ULK Gisozi Campus Gate
       [-1.9180, 30.0650], // Gisozi Centre
-      [-1.9145, 30.0665],
+      [-1.9160, 30.0640], // FAWE Girls School
       [-1.9120, 30.0680], // Batsinda Hill Road
       [-1.9080, 30.0692],
       [-1.9050, 30.0700], // Batsinda Terminal
@@ -1234,12 +1392,21 @@ export const KIGALI_ROUTES: TransitRoute[] = [
     destinationId: 'stop_kanombe_airport',
     originName: 'Downtown CBD',
     destinationName: 'Kanombe Airport (KGL)',
-    stopIds: ['stop_downtown', 'stop_chuk', 'stop_sonatubes', 'stop_remera_giporoso', 'stop_kanombe_airport'],
+    stopIds: [
+      'stop_downtown',
+      'stop_chuk',
+      'stop_kanogo',
+      'stop_rwandex',
+      'stop_sonatubes',
+      'stop_remera_giporoso',
+      'stop_kanombe_military_hospital',
+      'stop_kanombe_airport',
+    ],
     waypoints: [
       [-1.9441, 30.0619], // Downtown CBD
       [-1.9482, 30.0594], // CHUK
       [-1.9520, 30.0670], // KN 3 Ave
-      [-1.9565, 30.0750], // Rwandex Junction
+      [-1.9565, 30.0750], // Kanogo Swamp Valley & Rwandex Junction
       [-1.9610, 30.0825],
       [-1.9660, 30.0910], // Sonatubes Roundabout
       [-1.9640, 30.0965], // KK 15 Rd
@@ -1247,8 +1414,8 @@ export const KIGALI_ROUTES: TransitRoute[] = [
       [-1.9600, 30.1080],
       [-1.9587, 30.1141], // Remera Giporoso Roundabout
       [-1.9605, 30.1210], // Airport Blvd (KK 15 Rd)
-      [-1.9630, 30.1280], // Military Hospital
-      [-1.9655, 30.1340],
+      [-1.9640, 30.1340], // Rwanda Military Hospital
+      [-1.9655, 30.1370],
       [-1.9686, 30.1395], // Kigali International Airport Terminal
     ],
     standardFareRwf: 450,
