@@ -31,7 +31,7 @@ export default function GeminiTransitChat({ userLocation }: GeminiTransitChatPro
       id: 'welcome',
       role: 'assistant',
       content:
-        '**Muraho! I am your multi-turn Kigali Transit Concierge.**\n\nI can plan multi-leg routes, check live traffic along Kigali hills, compute RURA Tap&Go fares, search recent local transport advisories, and locate stops with Maps grounding.\n\nChoose a model and grounding mode to get started!',
+        '**Muraho! I am your multi-turn Kigali Transit Concierge.**\n\nI can plan multi-leg routes across all 79+ Kigali bus stops, check live traffic along Kigali corridors, compute RURA Tap&Go fares, search local transport advisories, and locate stops with Maps grounding.\n\nChoose a model and grounding mode to get started!',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -92,9 +92,9 @@ export default function GeminiTransitChat({ userLocation }: GeminiTransitChatPro
   }, [messages, isLoading]);
 
   const quickPrompts = [
-    'How do I travel from Downtown to Kanombe Airport via KBS?',
+    'How do I travel from Downtown to Kanombe Airport via Line 301?',
     'What is the quickest route from Nyabugogo to Kimironko?',
-    'Where is the nearest bus terminal to Kigali Heights?',
+    'Where is the nearest bus stop to Kigali Heights or KBC?',
     'Explain the RURA tariff per kilometer for Tap&Go',
   ];
 
