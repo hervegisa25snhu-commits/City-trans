@@ -312,7 +312,7 @@ export default function InteractiveMap({
             ${isBusPark ? '<span class="bg-amber-100 text-amber-800 text-[9px] px-1 py-0.2 rounded font-bold">GARE</span>' : ''}
           </div>
           <p class="text-[11px] text-emerald-800 font-mono font-semibold">${stop.kinyarwandaName || ''}</p>
-          <p class="text-[11px] text-slate-600"><strong>Zone:</strong> ${stop.zone}</p>
+          <p class="text-[11px] text-slate-600"><strong>Zone / District:</strong> ${stop.zone} ${stop.district ? `• ${stop.district}` : ''}</p>
           ${isBusPark && stop.bayCapacity ? `<p class="text-[11px] text-slate-700"><strong>Capacity:</strong> ${stop.bayCapacity} bus bays</p>` : ''}
           ${stop.popularLandmark ? `<p class="text-[11px] text-slate-600"><strong>Landmark:</strong> ${stop.popularLandmark}</p>` : ''}
           ${stop.connectingLines?.length ? `<p class="text-[11px] text-blue-700"><strong>Lines:</strong> ${stop.connectingLines.map((c: string) => `Line ${c}`).join(', ')}</p>` : ''}

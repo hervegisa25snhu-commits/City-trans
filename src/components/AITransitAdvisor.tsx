@@ -25,7 +25,7 @@ export default function AITransitAdvisor({ userLocation }: AITransitAdvisorProps
       id: 'welcome_msg',
       role: 'assistant',
       content:
-        '**Muraho! Welcome to the Kigali AI Transit Assistant.**\n\nI can help you navigate Kigali\'s bus lines (101, 102, 104, 205, 301, 308, 502), estimate Tap&Go fares, plan transfers across Kigali\'s hills, and check live traffic conditions.',
+        '**Muraho! Welcome to the Kigali AI Transit Assistant.**\n\nI can help you navigate all 79+ mapped Kigali bus stops & major terminals across Nyarugenge, Gasabo, and Kicukiro districts. Ask me about transit lines (101, 102, 104, 205, 301, 308, 309, 310, 401, 502), Tap&Go fares, EV charging hubs, and optimal transfers.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -39,9 +39,9 @@ export default function AITransitAdvisor({ userLocation }: AITransitAdvisorProps
 
   const quickPrompts = [
     'How do I get from Downtown to Kigali Airport?',
-    'Best route from Nyabugogo to Kimironko during rush hour?',
-    'What bus line goes to Kigali Convention Centre & KBC?',
-    'Calculate Tap&Go fares from Remera to Batsinda',
+    'Best route from Kimironko to Kinyinya Bus Park (Line 309)?',
+    'Which bus stops are near Kibagabaga Hospital and ULK Gisozi?',
+    'Route from Nyabugogo to Gahanga Cricket Stadium (Line 401)',
   ];
 
   useEffect(() => {
