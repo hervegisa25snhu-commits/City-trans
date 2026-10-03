@@ -142,6 +142,15 @@ setInterval(() => {
 
 // --- REST API ENDPOINTS ---
 
+// Telemetry: Fetch all mapped Kigali bus stops & parks
+app.get("/api/telemetry/stops", (req, res) => {
+  res.json({
+    timestamp: new Date().toISOString(),
+    totalStops: KIGALI_BUS_STOPS.length,
+    stops: KIGALI_BUS_STOPS,
+  });
+});
+
 // Telemetry: Fetch all active Kigali buses
 app.get("/api/telemetry/buses", (req, res) => {
   res.json({
