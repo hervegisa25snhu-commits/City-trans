@@ -64,6 +64,13 @@ export default function StopArrivalsPanel({
     ? calculateDistanceKm(userLocation.lat, userLocation.lng, currentStop.lat, currentStop.lng)
     : null;
 
+  // Group stops for the selector dropdown
+  const busParks = useMemo(() => KIGALI_BUS_STOPS.filter((s) => s.isBusPark), []);
+  const nyarugengeStops = useMemo(() => KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Nyarugenge'), []);
+  const gasaboStops = useMemo(() => KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Gasabo'), []);
+  const kicukiroStops = useMemo(() => KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Kicukiro'), []);
+  const outerStops = useMemo(() => KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && s.district === 'Outer Kigali'), []);
+
   return (
     <div className="flex flex-col h-full bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
       {/* Header: Stop Selector & Info */}
@@ -76,7 +83,7 @@ export default function StopArrivalsPanel({
             <div>
               <h2 className="text-base font-bold text-slate-100">{currentStop.name}</h2>
               <p className="text-xs text-slate-400 font-sans">
-                {currentStop.kinyarwandaName} • {currentStop.zone}
+                {currentStop.kinyarwandaName} • {currentStop.district || currentStop.zone}
               </p>
             </div>
           </div>
@@ -89,9 +96,11 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
-        {/* Stop Selector Dropdown */}
+        {/* Stop Selector Dropdown with District Optgroups */}
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+          <label className="text-[11px] font-medium text-slate-400">
+            Select Kigali Bus Stop or Terminal ({KIGALI_BUS_STOPS.length} Mapped):
+          </label>
           <select
             value={currentStop.id}
             onChange={(e) => {
@@ -100,11 +109,47 @@ export default function StopArrivalsPanel({
             }}
             className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            <optgroup label="🏛️ Major Bus Parks & Terminals (Gares)">
+              {busParks.map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.district})
+                </option>
+              ))}
+            </optgroup>
+
+            <optgroup label="📍 Nyarugenge District Stops">
+              {nyarugengeStops.map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name}
+                </option>
+              ))}
+            </optgroup>
+
+            <optgroup label="📍 Gasabo District Stops">
+              {gasaboStops.map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name}
+                </option>
+              ))}
+            </optgroup>
+
+            <optgroup label="📍 Kicukiro District Stops">
+              {kicukiroStops.map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name}
+                </option>
+              ))}
+            </optgroup>
+
+            {outerStops.length > 0 && (
+              <optgroup label="📍 Outer Kigali & Suburb Stops">
+                {outerStops.map((stop) => (
+                  <option key={stop.id} value={stop.id}>
+                    {stop.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
 
