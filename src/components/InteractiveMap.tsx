@@ -31,9 +31,13 @@ interface InteractiveMapProps {
   onLocateUser: () => void;
 }
 
-type MapStyle = 'voyager' | 'dark' | 'streets' | 'satellite';
+type MapStyle = 'osm' | 'voyager' | 'dark' | 'satellite';
 
 const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
+  osm: {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
   voyager: {
     url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
@@ -41,10 +45,6 @@ const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
   dark: {
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-  },
-  streets: {
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
   },
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -74,7 +74,7 @@ export default function InteractiveMap({
   const corridorPolylinesRef = useRef<Map<string, L.Polyline>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
+  const [mapStyle, setMapStyle] = useState<MapStyle>('osm');
   const [showStops, setShowStops] = useState(true);
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
@@ -503,9 +503,9 @@ export default function InteractiveMap({
             onChange={(e) => setMapStyle(e.target.value as MapStyle)}
             className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
           >
+            <option value="osm">OSM</option>
             <option value="voyager">Carto Light</option>
             <option value="dark">Carto Dark</option>
-            <option value="streets">OpenStreetMap</option>
             <option value="satellite">Satellite</option>
           </select>
 
