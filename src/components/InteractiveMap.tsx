@@ -76,6 +76,7 @@ export default function InteractiveMap({
 
   const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
   const [showStops, setShowStops] = useState(true);
+  const [stopsFilter, setStopsFilter] = useState<'all' | 'parks_only' | 'district_nyarugenge' | 'district_gasabo' | 'district_kicukiro'>('all');
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
   const [showRouteLines, setShowRouteLines] = useState(false);
@@ -263,7 +264,16 @@ export default function InteractiveMap({
     stopMarkersRef.current.forEach((m) => map.removeLayer(m));
     stopMarkersRef.current.clear();
 
-    KIGALI_BUS_STOPS.forEach((stop) => {
+    const filteredStops = KIGALI_BUS_STOPS.filter((stop) => {
+      if (!showStops) return false;
+      if (stopsFilter === 'parks_only') return stop.isBusPark;
+      if (stopsFilter === 'district_nyarugenge') return stop.district === 'Nyarugenge';
+      if (stopsFilter === 'district_gasabo') return stop.district === 'Gasabo';
+      if (stopsFilter === 'district_kicukiro') return stop.district === 'Kicukiro';
+      return true;
+    });
+
+    filteredStops.forEach((stop) => {
       const isBusPark = stop.isBusPark;
       const gareLabel = stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name;
 
@@ -286,16 +296,16 @@ export default function InteractiveMap({
         `
           : `
           <div class="group relative flex items-center justify-center cursor-pointer">
-            <div class="w-3 h-3 rounded-full ${
-              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-slate-700 border border-slate-300'
-            } shadow-sm group-hover:scale-125 transition"></div>
+            <div class="w-2.5 h-2.5 rounded-full ${
+              stop.isEvChargingHub ? 'bg-emerald-400 border border-white' : 'bg-amber-400/90 border border-slate-900'
+            } shadow-sm group-hover:scale-150 transition"></div>
             <div class="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 border border-slate-700">
               ${stop.name}
             </div>
           </div>
         `,
-        iconSize: isBusPark ? [110, 24] : [14, 14],
-        iconAnchor: isBusPark ? [55, 12] : [7, 7],
+        iconSize: isBusPark ? [110, 24] : [10, 10],
+        iconAnchor: isBusPark ? [55, 12] : [5, 5],
       });
 
       const marker = L.marker([stop.lat, stop.lng], { icon: customIcon }).addTo(map);
@@ -324,17 +334,11 @@ export default function InteractiveMap({
     });
   }
 
-  // Toggle Visibility for layers
+  // Toggle Visibility / filter for stops
   useEffect(() => {
     if (!mapRef.current) return;
-    stopMarkersRef.current.forEach((marker) => {
-      if (showStops) {
-        if (!mapRef.current?.hasLayer(marker)) mapRef.current?.addLayer(marker);
-      } else {
-        if (mapRef.current?.hasLayer(marker)) mapRef.current?.removeLayer(marker);
-      }
-    });
-  }, [showStops]);
+    renderStops(mapRef.current);
+  }, [showStops, stopsFilter]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -551,18 +555,32 @@ export default function InteractiveMap({
             <span className="hidden sm:inline">Bus Lanes</span>
           </button>
 
-          {/* Stops Toggle */}
-          <button
-            onClick={() => setShowStops(!showStops)}
-            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
-              showStops
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Stops</span>
-          </button>
+          {/* Stops Filter Switcher */}
+          <div className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setShowStops(!showStops)}
+              className={`text-xs font-semibold flex items-center gap-1 transition ${
+                showStops ? 'text-amber-400' : 'text-slate-500'
+              }`}
+              title="Toggle Bus Stops Overlay"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{showStops ? `${KIGALI_BUS_STOPS.length} Stops` : 'Stops Off'}</span>
+            </button>
+            {showStops && (
+              <select
+                value={stopsFilter}
+                onChange={(e) => setStopsFilter(e.target.value as any)}
+                className="bg-transparent text-slate-300 text-[11px] border-l border-slate-800 pl-1.5 focus:outline-none"
+              >
+                <option value="all" className="bg-slate-900">All ({KIGALI_BUS_STOPS.length})</option>
+                <option value="parks_only" className="bg-slate-900">Gares Only ({KIGALI_BUS_STOPS.filter(s => s.isBusPark).length})</option>
+                <option value="district_gasabo" className="bg-slate-900">Gasabo</option>
+                <option value="district_nyarugenge" className="bg-slate-900">Nyarugenge</option>
+                <option value="district_kicukiro" className="bg-slate-900">Kicukiro</option>
+              </select>
+            )}
+          </div>
 
           {/* Locate Me */}
           <button
