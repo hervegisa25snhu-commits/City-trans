@@ -115,6 +115,7 @@ export default function GoogleTransitMap({
   const [mapTypeId, setMapTypeId] = useState<'roadmap' | 'satellite' | 'hybrid' | 'terrain'>('roadmap');
   const [showTraffic, setShowTraffic] = useState(false);
   const [showStops, setShowStops] = useState(true);
+  const [stopsFilter, setStopsFilter] = useState<'all' | 'parks_only' | 'district_nyarugenge' | 'district_gasabo' | 'district_kicukiro'>('all');
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
   const [showRouteLines, setShowRouteLines] = useState(false);
@@ -241,19 +242,32 @@ export default function GoogleTransitMap({
             <span className="hidden sm:inline">Bus Lanes</span>
           </button>
 
-          {/* Bus Stops Toggle */}
-          <button
-            onClick={() => setShowStops(!showStops)}
-            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
-              showStops
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
-            }`}
-            title="Toggle Bus Terminals & Stops"
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Stops</span>
-          </button>
+          {/* Bus Stops Filter Switcher */}
+          <div className="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setShowStops(!showStops)}
+              className={`text-xs font-semibold flex items-center gap-1 transition ${
+                showStops ? 'text-amber-400' : 'text-slate-500'
+              }`}
+              title="Toggle Bus Stops Overlay"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{showStops ? `${KIGALI_BUS_STOPS.length} Stops` : 'Stops Off'}</span>
+            </button>
+            {showStops && (
+              <select
+                value={stopsFilter}
+                onChange={(e) => setStopsFilter(e.target.value as any)}
+                className="bg-transparent text-slate-300 text-[11px] border-l border-slate-800 pl-1.5 focus:outline-none"
+              >
+                <option value="all" className="bg-slate-900">All ({KIGALI_BUS_STOPS.length})</option>
+                <option value="parks_only" className="bg-slate-900">Gares Only ({KIGALI_BUS_STOPS.filter(s => s.isBusPark).length})</option>
+                <option value="district_gasabo" className="bg-slate-900">Gasabo</option>
+                <option value="district_nyarugenge" className="bg-slate-900">Nyarugenge</option>
+                <option value="district_kicukiro" className="bg-slate-900">Kicukiro</option>
+              </select>
+            )}
+          </div>
 
           {/* Locate Me */}
           <button
@@ -384,59 +398,67 @@ export default function GoogleTransitMap({
 
             {/* Bus Stops & Terminal Markers */}
             {showStops &&
-              KIGALI_BUS_STOPS.map((stop) => {
-                const isBusPark = stop.isBusPark;
-                const isSelected = selectedStop?.id === stop.id;
+              KIGALI_BUS_STOPS
+                .filter((stop) => {
+                  if (stopsFilter === 'parks_only') return stop.isBusPark;
+                  if (stopsFilter === 'district_nyarugenge') return stop.district === 'Nyarugenge';
+                  if (stopsFilter === 'district_gasabo') return stop.district === 'Gasabo';
+                  if (stopsFilter === 'district_kicukiro') return stop.district === 'Kicukiro';
+                  return true;
+                })
+                .map((stop) => {
+                  const isBusPark = stop.isBusPark;
+                  const isSelected = selectedStop?.id === stop.id;
 
-                return (
-                  <AdvancedMarker
-                    key={stop.id}
-                    position={{ lat: stop.lat, lng: stop.lng }}
-                    title={`${stop.name} (${stop.kinyarwandaName || ''})`}
-                    onClick={() => {
-                      onSelectStop(stop);
-                      setActiveStopInfoWindow(stop);
-                    }}
-                  >
-                    <div className="group relative flex items-center justify-center cursor-pointer transform hover:scale-125 transition">
-                      {isBusPark ? (
-                        <div className="relative flex items-center">
-                          <div className={`absolute -inset-1 rounded-2xl ${isSelected ? 'bg-amber-400 animate-ping' : 'bg-emerald-500/30'}`} />
-                          <div
-                            className={`relative px-2 py-1 rounded-xl shadow-lg border flex items-center gap-1.5 transition ${
-                              isSelected
-                                ? 'bg-amber-500 text-slate-950 border-amber-300 font-bold scale-110'
-                                : stop.isEvChargingHub
-                                ? 'bg-emerald-950 text-emerald-300 border-emerald-400/80 font-bold'
-                                : 'bg-slate-900 text-amber-400 border-amber-500/60 font-semibold'
-                            }`}
-                          >
-                            <span className="text-[11px]">🏛️</span>
-                            <span className="text-[11px] font-mono tracking-tight whitespace-nowrap">
-                              {stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name}
-                            </span>
-                            {stop.isEvChargingHub && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="EV Hub" />
-                            )}
+                  return (
+                    <AdvancedMarker
+                      key={stop.id}
+                      position={{ lat: stop.lat, lng: stop.lng }}
+                      title={`${stop.name} (${stop.kinyarwandaName || ''})`}
+                      onClick={() => {
+                        onSelectStop(stop);
+                        setActiveStopInfoWindow(stop);
+                      }}
+                    >
+                      <div className="group relative flex items-center justify-center cursor-pointer transform hover:scale-125 transition">
+                        {isBusPark ? (
+                          <div className="relative flex items-center">
+                            <div className={`absolute -inset-1 rounded-2xl ${isSelected ? 'bg-amber-400 animate-ping' : 'bg-emerald-500/30'}`} />
+                            <div
+                              className={`relative px-2 py-1 rounded-xl shadow-lg border flex items-center gap-1.5 transition ${
+                                isSelected
+                                  ? 'bg-amber-500 text-slate-950 border-amber-300 font-bold scale-110'
+                                  : stop.isEvChargingHub
+                                  ? 'bg-emerald-950 text-emerald-300 border-emerald-400/80 font-bold'
+                                  : 'bg-slate-900 text-amber-400 border-amber-500/60 font-semibold'
+                              }`}
+                            >
+                              <span className="text-[11px]">🏛️</span>
+                              <span className="text-[11px] font-mono tracking-tight whitespace-nowrap">
+                                {stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name}
+                              </span>
+                              {stop.isEvChargingHub && (
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="EV Hub" />
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div
-                            className={`w-3.5 h-3.5 rounded-full border shadow-sm transition ${
-                              isSelected
-                                ? 'bg-amber-400 border-white scale-125 ring-4 ring-amber-400/40'
-                                : stop.isEvChargingHub
-                                ? 'bg-emerald-500 border-emerald-200'
-                                : 'bg-slate-700 border-slate-300 hover:bg-amber-400'
-                            }`}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </AdvancedMarker>
-                );
-              })}
+                        ) : (
+                          <div className="relative">
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full border shadow-sm transition ${
+                                isSelected
+                                  ? 'bg-amber-400 border-white scale-150 ring-4 ring-amber-400/40'
+                                  : stop.isEvChargingHub
+                                  ? 'bg-emerald-500 border-emerald-200'
+                                  : 'bg-amber-400/90 border-slate-900 hover:scale-150 hover:bg-white'
+                              }`}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </AdvancedMarker>
+                  );
+                })}
 
             {/* InfoWindow for Selected Choke Point */}
             {activeChokeInfoWindow && (
