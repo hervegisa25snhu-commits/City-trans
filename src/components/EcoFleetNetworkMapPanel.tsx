@@ -374,18 +374,23 @@ export default function EcoFleetNetworkMapPanel({
         {/* TAB 2: ALL BUS STOPS */}
         {activeTab === 'all_stops' && (
           <div className="space-y-3">
-            <div className="p-3 bg-blue-950/20 border border-blue-500/30 rounded-2xl flex items-start gap-2.5">
-              <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-bold text-xs text-blue-300">Complete Kigali Transit Stops Directory</h4>
-                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
-                  All mapped bus stops, waypoints, and shelters across Kigali's sectors with GPS precision.
-                </p>
+            <div className="p-3 bg-blue-950/20 border border-blue-500/30 rounded-2xl flex items-start justify-between gap-2.5">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-xs text-blue-300">Complete Kigali Transit Stops Directory</h4>
+                  <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                    Showing <strong className="text-blue-400">{filteredAllStops.length}</strong> of {KIGALI_BUS_STOPS.length} accurately mapped stops across Kigali's sectors with GPS precision.
+                  </p>
+                </div>
               </div>
+              <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 font-mono text-[10px] font-bold shrink-0">
+                {filteredAllStops.length} Stops
+              </span>
             </div>
 
             <div className="space-y-2">
-              {filteredAllStops.map((stop) => (
+              {filteredAllStops.slice(0, 150).map((stop) => (
                 <div
                   key={stop.id}
                   onClick={() => {
@@ -399,13 +404,23 @@ export default function EcoFleetNetworkMapPanel({
                       <div className="flex items-center gap-1.5">
                         <MapPin className={`w-3.5 h-3.5 ${stop.isBusPark ? 'text-amber-400' : 'text-blue-400'}`} />
                         <h4 className="font-bold text-xs text-white">{stop.name}</h4>
+                        {stop.facilities.includes('Shelter') && (
+                          <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded">
+                            Shelter
+                          </span>
+                        )}
+                        {stop.isEvChargingHub && (
+                          <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1 rounded">
+                            ⚡ EV Hub
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-emerald-400 font-mono mt-0.5">
                         {stop.kinyarwandaName}
                       </p>
                     </div>
 
-                    <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-800">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-800 shrink-0">
                       {stop.district || stop.zone}
                     </span>
                   </div>
@@ -434,6 +449,11 @@ export default function EcoFleetNetworkMapPanel({
                   </div>
                 </div>
               ))}
+              {filteredAllStops.length > 150 && (
+                <p className="text-center text-xs text-slate-500 py-2">
+                  Showing top 150 results. Use the search input or district filter above to narrow down specific stops.
+                </p>
+              )}
             </div>
           </div>
         )}
