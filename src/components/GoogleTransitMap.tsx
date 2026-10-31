@@ -387,6 +387,7 @@ export default function GoogleTransitMap({
               KIGALI_BUS_STOPS.map((stop) => {
                 const isBusPark = stop.isBusPark;
                 const isSelected = selectedStop?.id === stop.id;
+                const hasShelter = stop.facilities.includes('Shelter');
 
                 return (
                   <AdvancedMarker
@@ -423,12 +424,14 @@ export default function GoogleTransitMap({
                       ) : (
                         <div className="relative">
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border shadow-sm transition ${
+                            className={`rounded-full border shadow-sm transition ${
                               isSelected
-                                ? 'bg-amber-400 border-white scale-125 ring-4 ring-amber-400/40'
+                                ? 'w-3.5 h-3.5 bg-amber-400 border-white scale-125 ring-4 ring-amber-400/40'
                                 : stop.isEvChargingHub
-                                ? 'bg-emerald-500 border-emerald-200'
-                                : 'bg-slate-700 border-slate-300 hover:bg-amber-400'
+                                ? 'w-3 h-3 bg-emerald-400 ring-2 ring-emerald-500/60 border-slate-900'
+                                : hasShelter
+                                ? 'w-2.5 h-2.5 bg-amber-400 border border-slate-900'
+                                : 'w-2 h-2 bg-sky-500 border border-slate-900 hover:bg-amber-400'
                             }`}
                           />
                         </div>

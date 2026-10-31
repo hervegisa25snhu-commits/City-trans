@@ -31,9 +31,13 @@ interface InteractiveMapProps {
   onLocateUser: () => void;
 }
 
-type MapStyle = 'voyager' | 'dark' | 'streets' | 'satellite';
+type MapStyle = 'streets' | 'voyager' | 'dark' | 'satellite';
 
 const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
+  streets: {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors',
+  },
   voyager: {
     url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
@@ -41,10 +45,6 @@ const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
   dark: {
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-  },
-  streets: {
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
   },
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -74,7 +74,7 @@ export default function InteractiveMap({
   const corridorPolylinesRef = useRef<Map<string, L.Polyline>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
   const [showStops, setShowStops] = useState(true);
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
@@ -265,6 +265,7 @@ export default function InteractiveMap({
 
     KIGALI_BUS_STOPS.forEach((stop) => {
       const isBusPark = stop.isBusPark;
+      const hasShelter = stop.facilities.includes('Shelter');
       const gareLabel = stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name;
 
       const customIcon = L.divIcon({
@@ -286,16 +287,20 @@ export default function InteractiveMap({
         `
           : `
           <div class="group relative flex items-center justify-center cursor-pointer">
-            <div class="w-3 h-3 rounded-full ${
-              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-slate-700 border border-slate-300'
-            } shadow-sm group-hover:scale-125 transition"></div>
+            <div class="w-2.5 h-2.5 rounded-full ${
+              stop.isEvChargingHub
+                ? 'bg-emerald-400 ring-2 ring-emerald-500/50'
+                : hasShelter
+                ? 'bg-amber-400 border border-slate-900 shadow-sm'
+                : 'bg-sky-500 border border-slate-900 shadow-sm'
+            } group-hover:scale-150 transition"></div>
             <div class="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 border border-slate-700">
               ${stop.name}
             </div>
           </div>
         `,
-        iconSize: isBusPark ? [110, 24] : [14, 14],
-        iconAnchor: isBusPark ? [55, 12] : [7, 7],
+        iconSize: isBusPark ? [110, 24] : [10, 10],
+        iconAnchor: isBusPark ? [55, 12] : [5, 5],
       });
 
       const marker = L.marker([stop.lat, stop.lng], { icon: customIcon }).addTo(map);
@@ -312,10 +317,13 @@ export default function InteractiveMap({
             ${isBusPark ? '<span class="bg-amber-100 text-amber-800 text-[9px] px-1 py-0.2 rounded font-bold">GARE</span>' : ''}
           </div>
           <p class="text-[11px] text-emerald-800 font-mono font-semibold">${stop.kinyarwandaName || ''}</p>
-          <p class="text-[11px] text-slate-600"><strong>Zone:</strong> ${stop.zone}</p>
+          <p class="text-[11px] text-slate-600"><strong>Zone / District:</strong> ${stop.district || stop.zone}</p>
           ${isBusPark && stop.bayCapacity ? `<p class="text-[11px] text-slate-700"><strong>Capacity:</strong> ${stop.bayCapacity} bus bays</p>` : ''}
           ${stop.popularLandmark ? `<p class="text-[11px] text-slate-600"><strong>Landmark:</strong> ${stop.popularLandmark}</p>` : ''}
           ${stop.connectingLines?.length ? `<p class="text-[11px] text-blue-700"><strong>Lines:</strong> ${stop.connectingLines.map((c: string) => `Line ${c}`).join(', ')}</p>` : ''}
+          <div class="flex flex-wrap gap-1 mt-1">
+            ${stop.facilities.map((f: string) => `<span class="bg-slate-100 text-slate-700 text-[9px] px-1.5 py-0.5 rounded border border-slate-200">${f}</span>`).join('')}
+          </div>
           ${stop.isEvChargingHub ? '<div class="mt-1 p-1 bg-emerald-50 text-emerald-800 text-[10px] rounded font-bold">⚡ EcoFleet EV Supercharging Hub</div>' : ''}
         </div>
       `);

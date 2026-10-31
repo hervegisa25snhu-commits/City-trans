@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { BusStop, BusTelemetry, StopArrivalPrediction } from '../types';
 import { KIGALI_BUS_STOPS, KIGALI_ROUTES } from '../data/kigaliTransitData';
 import { calculateDistanceKm, formatDistance, formatEta } from '../utils/geoUtils';
-import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2 } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2, Search, Filter } from 'lucide-react';
 
 interface StopArrivalsPanelProps {
   selectedStop: BusStop | null;
@@ -20,6 +20,25 @@ export default function StopArrivalsPanel({
   onSelectBus,
 }: StopArrivalsPanelProps) {
   const currentStop = selectedStop || KIGALI_BUS_STOPS[0];
+  const [stopFilterText, setStopFilterText] = useState('');
+  const [districtFilter, setDistrictFilter] = useState<'all' | 'Nyarugenge' | 'Gasabo' | 'Kicukiro' | 'Outer Kigali'>('all');
+
+  // Filtered stops for selector
+  const eligibleStops = useMemo(() => {
+    return KIGALI_BUS_STOPS.filter((stop) => {
+      if (districtFilter !== 'all' && stop.district !== districtFilter) return false;
+      if (stopFilterText.trim()) {
+        const q = stopFilterText.toLowerCase();
+        return (
+          stop.name.toLowerCase().includes(q) ||
+          (stop.kinyarwandaName && stop.kinyarwandaName.toLowerCase().includes(q)) ||
+          (stop.popularLandmark && stop.popularLandmark.toLowerCase().includes(q)) ||
+          (stop.district && stop.district.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [stopFilterText, districtFilter]);
 
   // Calculate upcoming arrivals for the selected stop
   const arrivals: StopArrivalPrediction[] = useMemo(() => {
@@ -70,13 +89,20 @@ export default function StopArrivalsPanel({
       <div className="p-4 border-b border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className={`p-2 rounded-xl ${currentStop.isBusPark ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">{currentStop.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-100">{currentStop.name}</h2>
+                {currentStop.isBusPark && (
+                  <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.2 rounded border border-amber-500/30">
+                    GARE
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-400 font-sans">
-                {currentStop.kinyarwandaName} • {currentStop.zone}
+                {currentStop.kinyarwandaName} • {currentStop.district || currentStop.zone}
               </p>
             </div>
           </div>
@@ -89,20 +115,49 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
-        {/* Stop Selector Dropdown */}
-        <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+        {/* Quick Filter & Searchable Dropdown */}
+        <div className="space-y-1.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div className="flex items-center justify-between text-[11px] font-medium text-slate-400">
+            <span>Find Stop ({KIGALI_BUS_STOPS.length} Mapped):</span>
+            <div className="flex items-center gap-1">
+              {(['all', 'Nyarugenge', 'Gasabo', 'Kicukiro'] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDistrictFilter(d)}
+                  className={`px-1.5 py-0.5 rounded text-[10px] ${
+                    districtFilter === d
+                      ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative">
+            <input
+              type="text"
+              value={stopFilterText}
+              onChange={(e) => setStopFilterText(e.target.value)}
+              placeholder="Search stop name (e.g. Nyabugogo, Remera, CHUK, Gishushu...)"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-7 pr-2 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2 top-2" />
+          </div>
+
           <select
             value={currentStop.id}
             onChange={(e) => {
               const found = KIGALI_BUS_STOPS.find((s) => s.id === e.target.value);
               if (found) onSelectStop(found);
             }}
-            className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-sans"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
+            {eligibleStops.map((stop) => (
               <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
+                {stop.isBusPark ? '🏛️ ' : '📍 '}{stop.name} ({stop.district || stop.zone})
               </option>
             ))}
           </select>
