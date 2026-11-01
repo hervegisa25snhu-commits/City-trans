@@ -31,9 +31,13 @@ interface InteractiveMapProps {
   onLocateUser: () => void;
 }
 
-type MapStyle = 'voyager' | 'dark' | 'streets' | 'satellite';
+type MapStyle = 'streets' | 'voyager' | 'dark' | 'satellite';
 
 const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
+  streets: {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
   voyager: {
     url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
@@ -41,10 +45,6 @@ const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
   dark: {
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-  },
-  streets: {
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
   },
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -74,8 +74,9 @@ export default function InteractiveMap({
   const corridorPolylinesRef = useRef<Map<string, L.Polyline>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
   const [showStops, setShowStops] = useState(true);
+  const [stopsFilter, setStopsFilter] = useState<'all' | 'parks_only'>('all');
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
   const [showRouteLines, setShowRouteLines] = useState(false);
@@ -106,7 +107,12 @@ export default function InteractiveMap({
     renderDedicatedCorridors(map, false);
     renderRoutes(map, activeRouteId, false);
     renderChokePoints(map);
-    renderStops(map);
+    renderStops(map, 'all');
+
+    // On zoom change, re-evaluate stops if needed
+    map.on('zoomend', () => {
+      // Zoom level can trigger rendering updates
+    });
 
     return () => {
       map.remove();
@@ -259,11 +265,15 @@ export default function InteractiveMap({
     });
   }
 
-  function renderStops(map: L.Map) {
+  function renderStops(map: L.Map, filterMode: 'all' | 'parks_only') {
     stopMarkersRef.current.forEach((m) => map.removeLayer(m));
     stopMarkersRef.current.clear();
 
-    KIGALI_BUS_STOPS.forEach((stop) => {
+    const stopsToRender = filterMode === 'parks_only'
+      ? KIGALI_BUS_STOPS.filter((s) => s.isBusPark)
+      : KIGALI_BUS_STOPS;
+
+    stopsToRender.forEach((stop) => {
       const isBusPark = stop.isBusPark;
       const gareLabel = stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name;
 
@@ -286,19 +296,22 @@ export default function InteractiveMap({
         `
           : `
           <div class="group relative flex items-center justify-center cursor-pointer">
-            <div class="w-3 h-3 rounded-full ${
-              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-slate-700 border border-slate-300'
-            } shadow-sm group-hover:scale-125 transition"></div>
+            <div class="w-2.5 h-2.5 rounded-full ${
+              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-slate-600 border border-slate-300'
+            } shadow-sm group-hover:scale-150 transition"></div>
             <div class="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 border border-slate-700">
               ${stop.name}
             </div>
           </div>
         `,
-        iconSize: isBusPark ? [110, 24] : [14, 14],
-        iconAnchor: isBusPark ? [55, 12] : [7, 7],
+        iconSize: isBusPark ? [110, 24] : [12, 12],
+        iconAnchor: isBusPark ? [55, 12] : [6, 6],
       });
 
-      const marker = L.marker([stop.lat, stop.lng], { icon: customIcon }).addTo(map);
+      const marker = L.marker([stop.lat, stop.lng], { icon: customIcon });
+      if (showStops) {
+        marker.addTo(map);
+      }
       marker.on('click', () => {
         onSelectStop(stop);
         map.flyTo([stop.lat, stop.lng], 15, { duration: 0.8 });
@@ -312,7 +325,7 @@ export default function InteractiveMap({
             ${isBusPark ? '<span class="bg-amber-100 text-amber-800 text-[9px] px-1 py-0.2 rounded font-bold">GARE</span>' : ''}
           </div>
           <p class="text-[11px] text-emerald-800 font-mono font-semibold">${stop.kinyarwandaName || ''}</p>
-          <p class="text-[11px] text-slate-600"><strong>Zone:</strong> ${stop.zone}</p>
+          <p class="text-[11px] text-slate-600"><strong>District:</strong> ${stop.district || stop.zone}</p>
           ${isBusPark && stop.bayCapacity ? `<p class="text-[11px] text-slate-700"><strong>Capacity:</strong> ${stop.bayCapacity} bus bays</p>` : ''}
           ${stop.popularLandmark ? `<p class="text-[11px] text-slate-600"><strong>Landmark:</strong> ${stop.popularLandmark}</p>` : ''}
           ${stop.connectingLines?.length ? `<p class="text-[11px] text-blue-700"><strong>Lines:</strong> ${stop.connectingLines.map((c: string) => `Line ${c}`).join(', ')}</p>` : ''}
@@ -323,6 +336,12 @@ export default function InteractiveMap({
       stopMarkersRef.current.set(stop.id, marker);
     });
   }
+
+  // Update stops when filter mode or showStops changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    renderStops(mapRef.current, stopsFilter);
+  }, [stopsFilter]);
 
   // Toggle Visibility for layers
   useEffect(() => {
@@ -503,9 +522,9 @@ export default function InteractiveMap({
             onChange={(e) => setMapStyle(e.target.value as MapStyle)}
             className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
           >
+            <option value="streets">OpenStreetMap Standard</option>
             <option value="voyager">Carto Light</option>
             <option value="dark">Carto Dark</option>
-            <option value="streets">OpenStreetMap</option>
             <option value="satellite">Satellite</option>
           </select>
 
@@ -551,17 +570,31 @@ export default function InteractiveMap({
             <span className="hidden sm:inline">Bus Lanes</span>
           </button>
 
-          {/* Stops Toggle */}
+          {/* Stops Toggle & Mode */}
           <button
-            onClick={() => setShowStops(!showStops)}
+            onClick={() => {
+              if (!showStops) {
+                setShowStops(true);
+                setStopsFilter('all');
+              } else if (stopsFilter === 'all') {
+                setStopsFilter('parks_only');
+              } else {
+                setShowStops(false);
+              }
+            }}
             className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
               showStops
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                ? stopsFilter === 'parks_only'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                 : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
             }`}
+            title="Click to cycle: All Stops -> Major Gares Only -> Hidden"
           >
             <MapPin className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Stops</span>
+            <span className="hidden sm:inline">
+              {!showStops ? 'Stops Off' : stopsFilter === 'parks_only' ? `Gares Only (${KIGALI_BUS_STOPS.filter(s => s.isBusPark).length})` : `All Stops (${KIGALI_BUS_STOPS.length})`}
+            </span>
           </button>
 
           {/* Locate Me */}
