@@ -115,6 +115,7 @@ export default function GoogleTransitMap({
   const [mapTypeId, setMapTypeId] = useState<'roadmap' | 'satellite' | 'hybrid' | 'terrain'>('roadmap');
   const [showTraffic, setShowTraffic] = useState(false);
   const [showStops, setShowStops] = useState(true);
+  const [stopsFilter, setStopsFilter] = useState<'all' | 'parks_only'>('all');
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
   const [showRouteLines, setShowRouteLines] = useState(false);
@@ -241,18 +242,31 @@ export default function GoogleTransitMap({
             <span className="hidden sm:inline">Bus Lanes</span>
           </button>
 
-          {/* Bus Stops Toggle */}
+          {/* Bus Stops Toggle & Filter */}
           <button
-            onClick={() => setShowStops(!showStops)}
+            onClick={() => {
+              if (!showStops) {
+                setShowStops(true);
+                setStopsFilter('all');
+              } else if (stopsFilter === 'all') {
+                setStopsFilter('parks_only');
+              } else {
+                setShowStops(false);
+              }
+            }}
             className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
               showStops
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                ? stopsFilter === 'parks_only'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                 : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
             }`}
-            title="Toggle Bus Terminals & Stops"
+            title="Click to cycle: All Stops -> Major Gares Only -> Hidden"
           >
             <MapPin className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Stops</span>
+            <span className="hidden sm:inline">
+              {!showStops ? 'Stops Off' : stopsFilter === 'parks_only' ? `Gares Only (${KIGALI_BUS_STOPS.filter(s => s.isBusPark).length})` : `All Stops (${KIGALI_BUS_STOPS.length})`}
+            </span>
           </button>
 
           {/* Locate Me */}
@@ -384,59 +398,61 @@ export default function GoogleTransitMap({
 
             {/* Bus Stops & Terminal Markers */}
             {showStops &&
-              KIGALI_BUS_STOPS.map((stop) => {
-                const isBusPark = stop.isBusPark;
-                const isSelected = selectedStop?.id === stop.id;
+              KIGALI_BUS_STOPS
+                .filter((stop) => (stopsFilter === 'parks_only' ? stop.isBusPark : true))
+                .map((stop) => {
+                  const isBusPark = stop.isBusPark;
+                  const isSelected = selectedStop?.id === stop.id;
 
-                return (
-                  <AdvancedMarker
-                    key={stop.id}
-                    position={{ lat: stop.lat, lng: stop.lng }}
-                    title={`${stop.name} (${stop.kinyarwandaName || ''})`}
-                    onClick={() => {
-                      onSelectStop(stop);
-                      setActiveStopInfoWindow(stop);
-                    }}
-                  >
-                    <div className="group relative flex items-center justify-center cursor-pointer transform hover:scale-125 transition">
-                      {isBusPark ? (
-                        <div className="relative flex items-center">
-                          <div className={`absolute -inset-1 rounded-2xl ${isSelected ? 'bg-amber-400 animate-ping' : 'bg-emerald-500/30'}`} />
-                          <div
-                            className={`relative px-2 py-1 rounded-xl shadow-lg border flex items-center gap-1.5 transition ${
-                              isSelected
-                                ? 'bg-amber-500 text-slate-950 border-amber-300 font-bold scale-110'
-                                : stop.isEvChargingHub
-                                ? 'bg-emerald-950 text-emerald-300 border-emerald-400/80 font-bold'
-                                : 'bg-slate-900 text-amber-400 border-amber-500/60 font-semibold'
-                            }`}
-                          >
-                            <span className="text-[11px]">🏛️</span>
-                            <span className="text-[11px] font-mono tracking-tight whitespace-nowrap">
-                              {stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name}
-                            </span>
-                            {stop.isEvChargingHub && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="EV Hub" />
-                            )}
+                  return (
+                    <AdvancedMarker
+                      key={stop.id}
+                      position={{ lat: stop.lat, lng: stop.lng }}
+                      title={`${stop.name} (${stop.kinyarwandaName || ''})`}
+                      onClick={() => {
+                        onSelectStop(stop);
+                        setActiveStopInfoWindow(stop);
+                      }}
+                    >
+                      <div className="group relative flex items-center justify-center cursor-pointer transform hover:scale-125 transition">
+                        {isBusPark ? (
+                          <div className="relative flex items-center">
+                            <div className={`absolute -inset-1 rounded-2xl ${isSelected ? 'bg-amber-400 animate-ping' : 'bg-emerald-500/30'}`} />
+                            <div
+                              className={`relative px-2 py-1 rounded-xl shadow-lg border flex items-center gap-1.5 transition ${
+                                isSelected
+                                  ? 'bg-amber-500 text-slate-950 border-amber-300 font-bold scale-110'
+                                  : stop.isEvChargingHub
+                                  ? 'bg-emerald-950 text-emerald-300 border-emerald-400/80 font-bold'
+                                  : 'bg-slate-900 text-amber-400 border-amber-500/60 font-semibold'
+                              }`}
+                            >
+                              <span className="text-[11px]">🏛️</span>
+                              <span className="text-[11px] font-mono tracking-tight whitespace-nowrap">
+                                {stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name}
+                              </span>
+                              {stop.isEvChargingHub && (
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="EV Hub" />
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div
-                            className={`w-3.5 h-3.5 rounded-full border shadow-sm transition ${
-                              isSelected
-                                ? 'bg-amber-400 border-white scale-125 ring-4 ring-amber-400/40'
-                                : stop.isEvChargingHub
-                                ? 'bg-emerald-500 border-emerald-200'
-                                : 'bg-slate-700 border-slate-300 hover:bg-amber-400'
-                            }`}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </AdvancedMarker>
-                );
-              })}
+                        ) : (
+                          <div className="relative">
+                            <div
+                              className={`w-3 h-3 rounded-full border shadow-sm transition ${
+                                isSelected
+                                  ? 'bg-amber-400 border-white scale-125 ring-4 ring-amber-400/40'
+                                  : stop.isEvChargingHub
+                                  ? 'bg-emerald-500 border-emerald-200'
+                                  : 'bg-slate-700 border-slate-300 hover:bg-amber-400'
+                              }`}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </AdvancedMarker>
+                  );
+                })}
 
             {/* InfoWindow for Selected Choke Point */}
             {activeChokeInfoWindow && (
