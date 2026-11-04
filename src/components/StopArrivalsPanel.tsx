@@ -89,9 +89,14 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
-        {/* Stop Selector Dropdown */}
-        <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+        {/* Stop Selector Dropdown & Filter */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium text-slate-400">
+            <span>Select Bus Stop ({KIGALI_BUS_STOPS.length} Mapped):</span>
+            <span className="text-amber-400 font-mono text-[10px]">
+              {currentStop.district || currentStop.zone}
+            </span>
+          </div>
           <select
             value={currentStop.id}
             onChange={(e) => {
@@ -100,11 +105,41 @@ export default function StopArrivalsPanel({
             }}
             className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            <optgroup label="Major Bus Terminals (Gares)">
+              {KIGALI_BUS_STOPS.filter((s) => s.isBusPark).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  🏛️ {stop.name} ({stop.kinyarwandaName?.split('/')[0] || ''})
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Nyarugenge District Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && (s.district === 'Nyarugenge' || s.zone.includes('Nyarugenge'))).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  📍 {stop.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Gasabo District Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && (s.district === 'Gasabo' || s.zone.includes('Gasabo'))).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  📍 {stop.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Kicukiro District Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && (s.district === 'Kicukiro' || s.zone.includes('Kicukiro'))).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  📍 {stop.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Outer Kigali Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark && (s.district === 'Outer Kigali' || s.zone.includes('Outer'))).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  📍 {stop.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 

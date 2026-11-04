@@ -151,6 +151,23 @@ app.get("/api/telemetry/buses", (req, res) => {
   });
 });
 
+// Telemetry: Fetch all accurately mapped Kigali bus stops & terminals
+app.get("/api/telemetry/stops", (req, res) => {
+  const { district, isBusPark } = req.query;
+  let stops = KIGALI_BUS_STOPS;
+  if (district && typeof district === "string") {
+    stops = stops.filter((s) => s.district === district || s.zone.includes(district));
+  }
+  if (isBusPark === "true") {
+    stops = stops.filter((s) => s.isBusPark);
+  }
+  res.json({
+    timestamp: new Date().toISOString(),
+    totalStops: stops.length,
+    stops,
+  });
+});
+
 // Telemetry: Fetch all Kigali Choke Points with real-time bottlenecks
 app.get("/api/telemetry/chokepoints", (req, res) => {
   res.json({
@@ -213,16 +230,18 @@ app.post("/api/gemini/chat", async (req, res) => {
 
     const ai = getGemini();
 
-    const systemInstruction = `You are the Official AI Transit Assistant and Commuter Concierge for Kigali City, Rwanda, integrated with the EcoFleet Rwanda Network Map (https://ecofleet.rw/network-map-2/) and RURA transit regulations.
+    const systemInstruction = `You are the Official AI Transit Assistant and Commuter Concierge for Kigali City, Rwanda, integrated with the EcoFleet Rwanda Network Map (https://ecofleet.rw/network-map-2/), OpenStreetMap ground truth, and RURA transit regulations.
 Your role:
-1. Provide accurate advice on Kigali bus routes (e.g., Line 101 Downtown-Nyabugogo-Remera-Kimironko, 102 Downtown-Nyamirambo, 104 Downtown-Gisozi-Batsinda, 205 Nyabugogo-Kimironko-Kabuga, 301 Downtown-Sonatubes-Airport, 308 Remera-Gikondo-Nyabugogo, 502 Kimironko-Batsinda).
+1. Provide accurate advice on Kigali bus routes and all 130+ accurately mapped bus stops and major bus parks (Gares) across all 3 Kigali districts (Nyarugenge, Gasabo, Kicukiro) and outer suburbs.
+   - Major Gares: Nyabugogo, Downtown (CBD), Remera Giporoso, Kimironko, Kinyinya, Nyanza Kicukiro, Nyamirambo (Cosmos & Kuryanyuma), Kicukiro Centre, Batsinda, Gisozi (ULK), Masaka, Kabuga, Gahanga, Kanombe Airport, Ruyenzi, Kacyiru, Masoro SEZ, Rubirizi.
+   - Key Corridors & Intermediate Stops: Rubangura, City Plaza, Kwisoko, CHUK, Camp Kigali, Poids Lourds, Kinamba, Kacyiru Ministries, RDB, Kigali Heights, Gishushu, Gisimenti, Chez Lando, BK Arena, Amahoro Stadium, Kibagabaga Hospital, UTEXRWA, Gakinjiro, SOS Gacuriro, Sonatubes, MAGERWA, Rwandex, Sopetrad, Kanogo, Kabeza, Busanza, Volkswagen SEZ.
 2. Detail Kigali transit operators: EcoFleet Rwanda (operating 100% Zero-Emission Electric buses with BasiGo), KBS (Kigali Bus Services), Royal Express, and RFTC.
 3. Provide live intelligence on Kigali's major transit choke points & bottlenecks:
-   - Nyabugogo Basin & Gitikinyoni Gateway (heavy intercity & trunk convergence)
-   - Sonatubes Roundabout & Rwandex Corridor (CBD / Airport / Bugesera tri-corridor bottleneck)
-   - Payage - Kanogo - Rwandex Swamp Valley (CBD - Kicukiro causeway)
-   - Giporoso (Ku Cya Mitsingi) / Remera (BK Arena & Airport bottleneck)
-   - Kinamba Junction & Poids Lourds (Kacyiru / Gisozi / Nyabugogo incline)
+   - Nyabugogo Basin & Gitikinyoni Gateway
+   - Sonatubes Roundabout & Rwandex Corridor
+   - Payage - Kanogo - Rwandex Swamp Valley
+   - Giporoso (Ku Cya Mitsingi) / Remera
+   - Kinamba Junction & Poids Lourds
    - Kimironko Market & Prison Roundabout
    - Kicukiro Centre & Nyanza Bus Park
    - Downtown - Former 1930 Prison - Muhima Gateway
