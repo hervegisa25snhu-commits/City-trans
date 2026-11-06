@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { BusStop, BusTelemetry, StopArrivalPrediction } from '../types';
 import { KIGALI_BUS_STOPS, KIGALI_ROUTES } from '../data/kigaliTransitData';
 import { calculateDistanceKm, formatDistance, formatEta } from '../utils/geoUtils';
-import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2 } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2, Search, Filter } from 'lucide-react';
 
 interface StopArrivalsPanelProps {
   selectedStop: BusStop | null;
@@ -19,7 +19,25 @@ export default function StopArrivalsPanel({
   onSelectStop,
   onSelectBus,
 }: StopArrivalsPanelProps) {
+  const [stopSearch, setStopSearch] = useState('');
+  const [districtFilter, setDistrictFilter] = useState<'all' | 'Nyarugenge' | 'Gasabo' | 'Kicukiro' | 'Outer Kigali'>('all');
+
   const currentStop = selectedStop || KIGALI_BUS_STOPS[0];
+
+  const filteredStops = useMemo(() => {
+    return KIGALI_BUS_STOPS.filter((stop) => {
+      if (districtFilter !== 'all' && stop.district !== districtFilter) return false;
+      if (stopSearch.trim()) {
+        const q = stopSearch.toLowerCase();
+        return (
+          stop.name.toLowerCase().includes(q) ||
+          (stop.kinyarwandaName && stop.kinyarwandaName.toLowerCase().includes(q)) ||
+          (stop.popularLandmark && stop.popularLandmark.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [districtFilter, stopSearch]);
 
   // Calculate upcoming arrivals for the selected stop
   const arrivals: StopArrivalPrediction[] = useMemo(() => {
@@ -89,9 +107,36 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
-        {/* Stop Selector Dropdown */}
-        <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+        {/* Stop Search & Filter Controls */}
+        <div className="space-y-2">
+          <div className="relative">
+            <input
+              type="text"
+              value={stopSearch}
+              onChange={(e) => setStopSearch(e.target.value)}
+              placeholder="Search among 370+ Kigali bus stops..."
+              className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" />
+          </div>
+
+          <div className="flex items-center gap-1 overflow-x-auto pb-0.5 text-[11px]">
+            {(['all', 'Nyarugenge', 'Gasabo', 'Kicukiro', 'Outer Kigali'] as const).map((dist) => (
+              <button
+                key={dist}
+                onClick={() => setDistrictFilter(dist)}
+                className={`px-2 py-0.5 rounded-lg whitespace-nowrap transition ${
+                  districtFilter === dist
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold'
+                    : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'
+                }`}
+              >
+                {dist === 'all' ? 'All Districts' : dist}
+              </button>
+            ))}
+          </div>
+
+          {/* Stop Selector Dropdown */}
           <select
             value={currentStop.id}
             onChange={(e) => {
@@ -100,11 +145,15 @@ export default function StopArrivalsPanel({
             }}
             className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            {filteredStops.length > 0 ? (
+              filteredStops.map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} {stop.district ? `(${stop.district})` : `(${stop.zone})`}
+                </option>
+              ))
+            ) : (
+              <option disabled>No stops match filter</option>
+            )}
           </select>
         </div>
 

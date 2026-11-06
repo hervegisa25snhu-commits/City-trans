@@ -151,6 +151,37 @@ app.get("/api/telemetry/buses", (req, res) => {
   });
 });
 
+// Telemetry: Fetch all Kigali Transit Stops with optional district, isBusPark, and search query filters
+app.get("/api/telemetry/stops", (req, res) => {
+  const { district, isBusPark, search } = req.query;
+  let stops = KIGALI_BUS_STOPS;
+
+  if (district && typeof district === "string" && district !== "all") {
+    stops = stops.filter((s) => s.district === district);
+  }
+
+  if (isBusPark !== undefined) {
+    const isParkBool = isBusPark === "true" || isBusPark === "1";
+    stops = stops.filter((s) => Boolean(s.isBusPark) === isParkBool);
+  }
+
+  if (search && typeof search === "string" && search.trim()) {
+    const q = search.trim().toLowerCase();
+    stops = stops.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        (s.kinyarwandaName && s.kinyarwandaName.toLowerCase().includes(q)) ||
+        (s.popularLandmark && s.popularLandmark.toLowerCase().includes(q)) ||
+        (s.connectingLines && s.connectingLines.some((l) => l.includes(q)))
+    );
+  }
+
+  res.json({
+    total: stops.length,
+    stops,
+  });
+});
+
 // Telemetry: Fetch all Kigali Choke Points with real-time bottlenecks
 app.get("/api/telemetry/chokepoints", (req, res) => {
   res.json({
