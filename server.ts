@@ -142,6 +142,37 @@ setInterval(() => {
 
 // --- REST API ENDPOINTS ---
 
+// Telemetry: Fetch all Kigali transit stops with optional district, isBusPark, and search filters
+app.get("/api/telemetry/stops", (req, res) => {
+  const { district, isBusPark, search } = req.query;
+  let results = KIGALI_BUS_STOPS;
+
+  if (district && typeof district === "string" && district !== "all") {
+    results = results.filter((s) => s.district?.toLowerCase() === district.toLowerCase());
+  }
+
+  if (isBusPark !== undefined) {
+    const isPark = isBusPark === "true" || isBusPark === "1";
+    results = results.filter((s) => Boolean(s.isBusPark) === isPark);
+  }
+
+  if (search && typeof search === "string" && search.trim()) {
+    const q = search.trim().toLowerCase();
+    results = results.filter((s) =>
+      s.name.toLowerCase().includes(q) ||
+      (s.kinyarwandaName && s.kinyarwandaName.toLowerCase().includes(q)) ||
+      (s.popularLandmark && s.popularLandmark.toLowerCase().includes(q)) ||
+      (s.connectingLines && s.connectingLines.some((l) => l.toLowerCase().includes(q)))
+    );
+  }
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    total: results.length,
+    stops: results,
+  });
+});
+
 // Telemetry: Fetch all active Kigali buses
 app.get("/api/telemetry/buses", (req, res) => {
   res.json({

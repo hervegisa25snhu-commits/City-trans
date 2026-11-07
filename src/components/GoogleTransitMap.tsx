@@ -115,6 +115,7 @@ export default function GoogleTransitMap({
   const [mapTypeId, setMapTypeId] = useState<'roadmap' | 'satellite' | 'hybrid' | 'terrain'>('roadmap');
   const [showTraffic, setShowTraffic] = useState(false);
   const [showStops, setShowStops] = useState(true);
+  const [stopsFilter, setStopsFilter] = useState<'all' | 'parks_only'>('all');
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
   const [showRouteLines, setShowRouteLines] = useState(false);
@@ -241,19 +242,30 @@ export default function GoogleTransitMap({
             <span className="hidden sm:inline">Bus Lanes</span>
           </button>
 
-          {/* Bus Stops Toggle */}
-          <button
-            onClick={() => setShowStops(!showStops)}
-            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
-              showStops
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
-            }`}
-            title="Toggle Bus Terminals & Stops"
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Stops</span>
-          </button>
+          {/* Bus Stops Toggle & Filter */}
+          <div className="flex items-center rounded-xl bg-slate-950 border border-slate-800 p-0.5">
+            <button
+              onClick={() => setShowStops(!showStops)}
+              className={`px-2 py-1 rounded-lg font-medium transition flex items-center gap-1 ${
+                showStops
+                  ? 'bg-amber-500/20 text-amber-300 font-bold'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Toggle Bus Stops & Terminals"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Stops ({stopsFilter === 'all' ? KIGALI_BUS_STOPS.length : KIGALI_BUS_STOPS.filter(s => s.isBusPark).length})</span>
+            </button>
+            {showStops && (
+              <button
+                onClick={() => setStopsFilter(stopsFilter === 'all' ? 'parks_only' : 'all')}
+                className="px-1.5 py-1 text-[10px] text-amber-400/80 hover:text-amber-300 border-l border-slate-800"
+                title={stopsFilter === 'all' ? 'Filter: Showing all stops. Click to show Major Gares only.' : 'Filter: Showing Major Gares only. Click to show all stops.'}
+              >
+                {stopsFilter === 'all' ? 'All' : 'Gares'}
+              </button>
+            )}
+          </div>
 
           {/* Locate Me */}
           <button
@@ -384,7 +396,7 @@ export default function GoogleTransitMap({
 
             {/* Bus Stops & Terminal Markers */}
             {showStops &&
-              KIGALI_BUS_STOPS.map((stop) => {
+              (stopsFilter === 'parks_only' ? KIGALI_BUS_STOPS.filter((s) => s.isBusPark) : KIGALI_BUS_STOPS).map((stop) => {
                 const isBusPark = stop.isBusPark;
                 const isSelected = selectedStop?.id === stop.id;
 
