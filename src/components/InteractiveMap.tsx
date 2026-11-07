@@ -31,17 +31,9 @@ interface InteractiveMapProps {
   onLocateUser: () => void;
 }
 
-type MapStyle = 'voyager' | 'dark' | 'streets' | 'satellite';
+type MapStyle = 'streets' | 'satellite' | 'voyager' | 'dark';
 
 const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
-  voyager: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-  },
-  dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-  },
   streets: {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors',
@@ -49,6 +41,14 @@ const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+  },
+  voyager: {
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
+  },
+  dark: {
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
   },
 };
 
@@ -74,8 +74,9 @@ export default function InteractiveMap({
   const corridorPolylinesRef = useRef<Map<string, L.Polyline>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
   const [showStops, setShowStops] = useState(true);
+  const [stopsFilter, setStopsFilter] = useState<'all' | 'parks_only'>('all');
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
   const [showRouteLines, setShowRouteLines] = useState(false);
@@ -106,13 +107,19 @@ export default function InteractiveMap({
     renderDedicatedCorridors(map, false);
     renderRoutes(map, activeRouteId, false);
     renderChokePoints(map);
-    renderStops(map);
+    renderStops(map, stopsFilter);
 
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, []);
+
+  // Update stops rendering when stopsFilter changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    renderStops(mapRef.current, stopsFilter);
+  }, [stopsFilter]);
 
   // Switch Map Style
   useEffect(() => {
@@ -259,11 +266,15 @@ export default function InteractiveMap({
     });
   }
 
-  function renderStops(map: L.Map) {
+  function renderStops(map: L.Map, filter: 'all' | 'parks_only' = 'all') {
     stopMarkersRef.current.forEach((m) => map.removeLayer(m));
     stopMarkersRef.current.clear();
 
-    KIGALI_BUS_STOPS.forEach((stop) => {
+    const stopsToRender = filter === 'parks_only'
+      ? KIGALI_BUS_STOPS.filter((s) => s.isBusPark)
+      : KIGALI_BUS_STOPS;
+
+    stopsToRender.forEach((stop) => {
       const isBusPark = stop.isBusPark;
       const gareLabel = stop.kinyarwandaName ? stop.kinyarwandaName.split('/')[0].trim() : stop.name;
 
@@ -503,10 +514,10 @@ export default function InteractiveMap({
             onChange={(e) => setMapStyle(e.target.value as MapStyle)}
             className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
           >
-            <option value="voyager">Carto Light</option>
-            <option value="dark">Carto Dark</option>
             <option value="streets">OpenStreetMap</option>
             <option value="satellite">Satellite</option>
+            <option value="voyager">Carto Light</option>
+            <option value="dark">Carto Dark</option>
           </select>
 
           {/* Choke Points Toggle */}
@@ -551,18 +562,30 @@ export default function InteractiveMap({
             <span className="hidden sm:inline">Bus Lanes</span>
           </button>
 
-          {/* Stops Toggle */}
-          <button
-            onClick={() => setShowStops(!showStops)}
-            className={`px-2.5 py-1 rounded-xl font-medium transition flex items-center gap-1.5 ${
-              showStops
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'text-slate-400 hover:text-slate-200 bg-slate-950 border border-slate-800'
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Stops</span>
-          </button>
+          {/* Stops Toggle & Filter */}
+          <div className="flex items-center rounded-xl bg-slate-950 border border-slate-800 p-0.5">
+            <button
+              onClick={() => setShowStops(!showStops)}
+              className={`px-2 py-1 rounded-lg font-medium transition flex items-center gap-1 ${
+                showStops
+                  ? 'bg-amber-500/20 text-amber-300 font-bold'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Toggle Bus Stops & Terminals"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Stops ({stopsFilter === 'all' ? KIGALI_BUS_STOPS.length : KIGALI_BUS_STOPS.filter(s => s.isBusPark).length})</span>
+            </button>
+            {showStops && (
+              <button
+                onClick={() => setStopsFilter(stopsFilter === 'all' ? 'parks_only' : 'all')}
+                className="px-1.5 py-1 text-[10px] text-amber-400/80 hover:text-amber-300 border-l border-slate-800"
+                title={stopsFilter === 'all' ? 'Filter: Showing all 460+ stops. Click to show Major Gares only.' : 'Filter: Showing Major Gares only. Click to show all 460+ stops.'}
+              >
+                {stopsFilter === 'all' ? 'All' : 'Gares'}
+              </button>
+            )}
+          </div>
 
           {/* Locate Me */}
           <button
