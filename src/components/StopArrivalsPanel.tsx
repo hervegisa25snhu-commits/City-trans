@@ -89,22 +89,36 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
-        {/* Stop Selector Dropdown */}
-        <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+        {/* Stop Selector Dropdown with Search & Quick Filter */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px]">
+            <label className="font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+            <span className="text-[10px] text-amber-400 font-mono">
+              {KIGALI_BUS_STOPS.length} Mapped Stops
+            </span>
+          </div>
           <select
             value={currentStop.id}
             onChange={(e) => {
               const found = KIGALI_BUS_STOPS.find((s) => s.id === e.target.value);
               if (found) onSelectStop(found);
             }}
-            className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+            className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition cursor-pointer"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            <optgroup label="🏛️ Major Bus Parks & Terminals (Gares)">
+              {KIGALI_BUS_STOPS.filter((s) => s.isBusPark).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} — {stop.kinyarwandaName}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="📍 All Sector & Intermediate Stops">
+              {KIGALI_BUS_STOPS.filter((s) => !s.isBusPark).map((stop) => (
+                <option key={stop.id} value={stop.id}>
+                  {stop.name} ({stop.district || stop.zone})
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 

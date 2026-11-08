@@ -31,9 +31,13 @@ interface InteractiveMapProps {
   onLocateUser: () => void;
 }
 
-type MapStyle = 'voyager' | 'dark' | 'streets' | 'satellite';
+type MapStyle = 'streets' | 'voyager' | 'dark' | 'satellite';
 
 const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
+  streets: {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
   voyager: {
     url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
@@ -41,10 +45,6 @@ const TILE_LAYERS: Record<MapStyle, { url: string; attribution: string }> = {
   dark: {
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-  },
-  streets: {
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
   },
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -74,7 +74,7 @@ export default function InteractiveMap({
   const corridorPolylinesRef = useRef<Map<string, L.Polyline>>(new Map());
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const [mapStyle, setMapStyle] = useState<MapStyle>('voyager');
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
   const [showStops, setShowStops] = useState(true);
   const [showChokePoints, setShowChokePoints] = useState(true);
   const [showDedicatedLanes, setShowDedicatedLanes] = useState(false);
@@ -287,7 +287,7 @@ export default function InteractiveMap({
           : `
           <div class="group relative flex items-center justify-center cursor-pointer">
             <div class="w-3 h-3 rounded-full ${
-              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-slate-700 border border-slate-300'
+              stop.isEvChargingHub ? 'bg-emerald-500 border border-white' : 'bg-amber-500 border border-slate-900'
             } shadow-sm group-hover:scale-125 transition"></div>
             <div class="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 border border-slate-700">
               ${stop.name}
@@ -304,15 +304,16 @@ export default function InteractiveMap({
         map.flyTo([stop.lat, stop.lng], 15, { duration: 0.8 });
       });
 
-      // Bind detailed popup
+      // Bind detailed popup with GPS coordinates and district badge
       marker.bindPopup(`
-        <div class="p-1 text-slate-900 max-w-xs font-sans">
+        <div class="p-1.5 text-slate-900 max-w-xs font-sans">
           <div class="flex items-center justify-between border-b pb-1 mb-1">
             <strong class="text-xs ${isBusPark ? 'text-amber-800' : 'text-slate-800'}">${stop.name}</strong>
-            ${isBusPark ? '<span class="bg-amber-100 text-amber-800 text-[9px] px-1 py-0.2 rounded font-bold">GARE</span>' : ''}
+            ${isBusPark ? '<span class="bg-amber-100 text-amber-800 text-[9px] px-1 py-0.2 rounded font-bold">GARE</span>' : `<span class="bg-blue-100 text-blue-800 text-[9px] px-1 py-0.2 rounded font-bold">${stop.district || 'Kigali'}</span>`}
           </div>
           <p class="text-[11px] text-emerald-800 font-mono font-semibold">${stop.kinyarwandaName || ''}</p>
           <p class="text-[11px] text-slate-600"><strong>Zone:</strong> ${stop.zone}</p>
+          <p class="text-[10px] text-slate-500 font-mono"><strong>GPS:</strong> ${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</p>
           ${isBusPark && stop.bayCapacity ? `<p class="text-[11px] text-slate-700"><strong>Capacity:</strong> ${stop.bayCapacity} bus bays</p>` : ''}
           ${stop.popularLandmark ? `<p class="text-[11px] text-slate-600"><strong>Landmark:</strong> ${stop.popularLandmark}</p>` : ''}
           ${stop.connectingLines?.length ? `<p class="text-[11px] text-blue-700"><strong>Lines:</strong> ${stop.connectingLines.map((c: string) => `Line ${c}`).join(', ')}</p>` : ''}
@@ -503,9 +504,9 @@ export default function InteractiveMap({
             onChange={(e) => setMapStyle(e.target.value as MapStyle)}
             className="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
           >
+            <option value="streets">OpenStreetMap</option>
             <option value="voyager">Carto Light</option>
             <option value="dark">Carto Dark</option>
-            <option value="streets">OpenStreetMap</option>
             <option value="satellite">Satellite</option>
           </select>
 
