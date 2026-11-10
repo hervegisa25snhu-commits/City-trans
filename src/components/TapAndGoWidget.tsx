@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SAMPLE_TAP_AND_GO_CARDS, KIGALI_BUS_STOPS } from '../data/kigaliTransitData';
 import { TapGoCard } from '../types';
 import { calculateDistanceKm } from '../utils/geoUtils';
@@ -28,6 +28,28 @@ export default function TapAndGoWidget() {
   const [originStopId, setOriginStopId] = useState(KIGALI_BUS_STOPS[0].id);
   const [destStopId, setDestStopId] = useState(KIGALI_BUS_STOPS[3].id);
   const [topUpAmount, setTopUpAmount] = useState('2000');
+  const [stopSearch, setStopSearch] = useState('');
+
+  // Group stops by District / Bus Park for organized dropdowns
+  const groupedStops = useMemo(() => {
+    const q = stopSearch.trim().toLowerCase();
+    const filtered = q
+      ? KIGALI_BUS_STOPS.filter(
+          (s) =>
+            s.name.toLowerCase().includes(q) ||
+            (s.kinyarwandaName && s.kinyarwandaName.toLowerCase().includes(q)) ||
+            (s.district && s.district.toLowerCase().includes(q))
+        )
+      : KIGALI_BUS_STOPS;
+
+    const gares = filtered.filter((s) => s.isBusPark);
+    const nyarugenge = filtered.filter((s) => !s.isBusPark && s.district === 'Nyarugenge');
+    const gasabo = filtered.filter((s) => !s.isBusPark && s.district === 'Gasabo');
+    const kicukiro = filtered.filter((s) => !s.isBusPark && s.district === 'Kicukiro');
+    const outer = filtered.filter((s) => !s.isBusPark && s.district === 'Outer Kigali');
+
+    return { gares, nyarugenge, gasabo, kicukiro, outer };
+  }, [stopSearch]);
   const [isToppingUp, setIsToppingUp] = useState(false);
   const [topUpSuccess, setTopUpSuccess] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
@@ -280,35 +302,127 @@ export default function TapAndGoWidget() {
             <span className="text-[10px] text-slate-400 font-mono">{distanceKm.toFixed(1)} km</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="space-y-1">
-              <label className="text-[10px] text-slate-400">Boarding Stop (Origin):</label>
-              <select
-                value={originStopId}
-                onChange={(e) => setOriginStopId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
-              >
-                {KIGALI_BUS_STOPS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+          <div className="space-y-2">
+            <div>
+              <input
+                type="text"
+                value={stopSearch}
+                onChange={(e) => setStopSearch(e.target.value)}
+                placeholder="Filter stops by name or district..."
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] text-slate-400">Alighting Stop (Destination):</label>
-              <select
-                value={destStopId}
-                onChange={(e) => setDestStopId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
-              >
-                {KIGALI_BUS_STOPS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400">Boarding Stop (Origin):</label>
+                <select
+                  value={originStopId}
+                  onChange={(e) => setOriginStopId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                >
+                  {groupedStops.gares.length > 0 && (
+                    <optgroup label="🏛️ Major Bus Parks">
+                      {groupedStops.gares.map((s) => (
+                        <option key={`orig_${s.id}`} value={s.id}>
+                          🏛️ {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.nyarugenge.length > 0 && (
+                    <optgroup label="📍 Nyarugenge Stops">
+                      {groupedStops.nyarugenge.map((s) => (
+                        <option key={`orig_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.gasabo.length > 0 && (
+                    <optgroup label="📍 Gasabo Stops">
+                      {groupedStops.gasabo.map((s) => (
+                        <option key={`orig_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.kicukiro.length > 0 && (
+                    <optgroup label="📍 Kicukiro Stops">
+                      {groupedStops.kicukiro.map((s) => (
+                        <option key={`orig_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.outer.length > 0 && (
+                    <optgroup label="📍 Outer Suburban Stops">
+                      {groupedStops.outer.map((s) => (
+                        <option key={`orig_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400">Alighting Stop (Destination):</label>
+                <select
+                  value={destStopId}
+                  onChange={(e) => setDestStopId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                >
+                  {groupedStops.gares.length > 0 && (
+                    <optgroup label="🏛️ Major Bus Parks">
+                      {groupedStops.gares.map((s) => (
+                        <option key={`dest_${s.id}`} value={s.id}>
+                          🏛️ {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.nyarugenge.length > 0 && (
+                    <optgroup label="📍 Nyarugenge Stops">
+                      {groupedStops.nyarugenge.map((s) => (
+                        <option key={`dest_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.gasabo.length > 0 && (
+                    <optgroup label="📍 Gasabo Stops">
+                      {groupedStops.gasabo.map((s) => (
+                        <option key={`dest_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.kicukiro.length > 0 && (
+                    <optgroup label="📍 Kicukiro Stops">
+                      {groupedStops.kicukiro.map((s) => (
+                        <option key={`dest_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {groupedStops.outer.length > 0 && (
+                    <optgroup label="📍 Outer Suburban Stops">
+                      {groupedStops.outer.map((s) => (
+                        <option key={`dest_${s.id}`} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
             </div>
           </div>
 
