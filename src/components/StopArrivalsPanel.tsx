@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { BusStop, BusTelemetry, StopArrivalPrediction } from '../types';
 import { KIGALI_BUS_STOPS, KIGALI_ROUTES } from '../data/kigaliTransitData';
 import { calculateDistanceKm, formatDistance, formatEta } from '../utils/geoUtils';
-import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2 } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, ShieldCheck, Bus, Sparkles, Navigation, CheckCircle2, Search } from 'lucide-react';
 
 interface StopArrivalsPanelProps {
   selectedStop: BusStop | null;
@@ -19,7 +19,29 @@ export default function StopArrivalsPanel({
   onSelectStop,
   onSelectBus,
 }: StopArrivalsPanelProps) {
+  const [stopFilter, setStopFilter] = useState('');
   const currentStop = selectedStop || KIGALI_BUS_STOPS[0];
+
+  // Group stops by District / Category for clean organized selection
+  const groupedStops = useMemo(() => {
+    const q = stopFilter.trim().toLowerCase();
+    const filtered = q
+      ? KIGALI_BUS_STOPS.filter(
+          (s) =>
+            s.name.toLowerCase().includes(q) ||
+            (s.kinyarwandaName && s.kinyarwandaName.toLowerCase().includes(q)) ||
+            (s.district && s.district.toLowerCase().includes(q))
+        )
+      : KIGALI_BUS_STOPS;
+
+    const gares = filtered.filter((s) => s.isBusPark);
+    const nyarugenge = filtered.filter((s) => !s.isBusPark && s.district === 'Nyarugenge');
+    const gasabo = filtered.filter((s) => !s.isBusPark && s.district === 'Gasabo');
+    const kicukiro = filtered.filter((s) => !s.isBusPark && s.district === 'Kicukiro');
+    const outer = filtered.filter((s) => !s.isBusPark && s.district === 'Outer Kigali');
+
+    return { gares, nyarugenge, gasabo, kicukiro, outer, total: filtered.length };
+  }, [stopFilter]);
 
   // Calculate upcoming arrivals for the selected stop
   const arrivals: StopArrivalPrediction[] = useMemo(() => {
@@ -89,9 +111,26 @@ export default function StopArrivalsPanel({
           )}
         </div>
 
-        {/* Stop Selector Dropdown */}
-        <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Select Bus Stop / Terminal:</label>
+        {/* Stop Selector Dropdown & Filter */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-medium text-slate-400">
+            <span>Select Bus Stop / Terminal:</span>
+            <span className="text-[10px] text-amber-400 font-mono">
+              {groupedStops.total} of {KIGALI_BUS_STOPS.length} stops
+            </span>
+          </div>
+
+          <div className="relative">
+            <input
+              type="text"
+              value={stopFilter}
+              onChange={(e) => setStopFilter(e.target.value)}
+              placeholder="Type to filter stops (e.g. Nyabugogo, Remera, ULK)..."
+              className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-7 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2 top-2" />
+          </div>
+
           <select
             value={currentStop.id}
             onChange={(e) => {
@@ -100,11 +139,55 @@ export default function StopArrivalsPanel({
             }}
             className="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
           >
-            {KIGALI_BUS_STOPS.map((stop) => (
-              <option key={stop.id} value={stop.id}>
-                {stop.name} ({stop.zone})
-              </option>
-            ))}
+            {groupedStops.gares.length > 0 && (
+              <optgroup label="🏛️ Major Bus Parks & Terminals (Gares)">
+                {groupedStops.gares.map((stop) => (
+                  <option key={stop.id} value={stop.id}>
+                    🏛️ {stop.name} ({stop.kinyarwandaName?.split('/')[0] || stop.name})
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedStops.nyarugenge.length > 0 && (
+              <optgroup label="📍 Nyarugenge District Stops">
+                {groupedStops.nyarugenge.map((stop) => (
+                  <option key={stop.id} value={stop.id}>
+                    {stop.name} {stop.kinyarwandaName && stop.kinyarwandaName !== stop.name ? `(${stop.kinyarwandaName})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedStops.gasabo.length > 0 && (
+              <optgroup label="📍 Gasabo District Stops">
+                {groupedStops.gasabo.map((stop) => (
+                  <option key={stop.id} value={stop.id}>
+                    {stop.name} {stop.kinyarwandaName && stop.kinyarwandaName !== stop.name ? `(${stop.kinyarwandaName})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedStops.kicukiro.length > 0 && (
+              <optgroup label="📍 Kicukiro District Stops">
+                {groupedStops.kicukiro.map((stop) => (
+                  <option key={stop.id} value={stop.id}>
+                    {stop.name} {stop.kinyarwandaName && stop.kinyarwandaName !== stop.name ? `(${stop.kinyarwandaName})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedStops.outer.length > 0 && (
+              <optgroup label="📍 Outer Kigali Suburban Stops">
+                {groupedStops.outer.map((stop) => (
+                  <option key={stop.id} value={stop.id}>
+                    {stop.name} {stop.kinyarwandaName && stop.kinyarwandaName !== stop.name ? `(${stop.kinyarwandaName})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
 
